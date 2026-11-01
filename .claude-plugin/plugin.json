@@ -1,11 +1,11 @@
 {
-  "name": "warriors-of-light",
-  "displayName": "Warriors of Light",
+  "name": "lumenparty",
+  "displayName": "lumenparty",
   "version": "0.2.0",
   "description": "A crew for Flutter, mobile and web apps: 16 subagents, 14 skills, zero-token guard hooks (Protect, Shell, Silence, Mini) and a merge gate that opens only on green CI, no conflict and PASS verdicts.",
   "author": { "name": "saimskywalker", "url": "https://github.com/saimskywalker" },
-  "homepage": "https://github.com/saimskywalker/warriors-of-light-ai-agents",
-  "repository": "https://github.com/saimskywalker/warriors-of-light-ai-agents",
+  "homepage": "https://github.com/saimskywalker/lumenparty",
+  "repository": "https://github.com/saimskywalker/lumenparty",
   "license": "MIT",
   "keywords": ["flutter", "mobile", "web", "subagents", "skills", "hooks", "guardrails", "merge-gate", "token-efficiency", "code-review", "security"]
 }

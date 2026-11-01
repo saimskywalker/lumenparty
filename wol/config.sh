@@ -1,4 +1,4 @@
-# Warriors of Light — project config. Sourced by every spell (hook).
+# lumenparty — project config. Sourced by every spell (hook).
 # Edit freely; install.sh never overwrites an existing config.sh.
 
 # Who may be merged for (your GitHub login) and how.

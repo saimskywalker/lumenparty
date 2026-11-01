@@ -1,35 +1,4 @@
 #!/usr/bin/env bash
-# wol — the crew's commands. On PATH while the plugin is enabled; with
-# install.sh the same file is .claude/wol/bin/wol.
-#
-#   wol init [flutter|web|fullstack]   write .claude/wol/config.sh for this project
-#   wol slow '<command>'               run a heavy command through the queue
-#   wol gate <pr> [--report]           the Crystal Gate
-#   wol libra                          queue, heavy processes, memory, recent runs
-#   wol awake start|stop|status        keep the machine awake (Laguna)
-#   wol rest [--dry]                   end of the midnight run
-set -uo pipefail
-here="$(cd "$(dirname "$0")" && pwd)"
-if [[ -d "$here/../wol/spells" ]]; then W="$(cd "$here/../wol" && pwd)"   # plugin root
-else W="$(cd "$here/.." && pwd)"; fi                                     # .claude/wol/bin
-sub="${1:-help}"; shift || true
-case "$sub" in
-  slow)  exec "$W/spells/slow.sh" "$@" ;;
-  gate)  exec "$W/crystal/gate.sh" "$@" ;;
-  libra) exec "$W/spells/libra.sh" "$@" ;;
-  awake) exec "$W/crystal/awake.sh" "$@" ;;
-  rest)  exec "$W/crystal/rest.sh" "$@" ;;
-  init)
-    root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"; dst="$root/.claude/wol/config.sh"
-    [[ -f "$dst" ]] && { echo "already configured: $dst"; exit 0; }
-    mkdir -p "$(dirname "$dst")"; cp "$W/config.sh" "$dst"
-    if [[ -n "${1:-}" ]]; then
-      [[ -f "$W/presets/$1.sh" ]] || { echo "unknown preset: $1 (flutter | web | fullstack)" >&2; exit 1; }
-      { echo; echo "# --- preset: $1 ---"; cat "$W/presets/$1.sh"; } >>"$dst"
-    fi
-    [[ -f "$root/.claude/wol/thresholds.md" ]] || cp "$W/thresholds.md" "$root/.claude/wol/"
-    login="$(gh api user --jq .login 2>/dev/null || true)"
-    [[ -n "$login" ]] && perl -pi -e "s/^WOL_OWNER=\"\"/WOL_OWNER=\"$login\"/" "$dst"
-    echo "wrote $dst (owner: ${login:-<set WOL_OWNER>}). Commit it to share the settings with your team." ;;
-  *) sed -n 2,11p "$0" ;;
-esac
+# wol — the old name of the lumenparty command, kept so existing habits and
+# scripts keep working. Same subcommands; see lumenparty next to this file.
+exec "$(dirname "$0")/lumenparty" "$@"

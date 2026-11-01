@@ -3,7 +3,7 @@
 The same four tasks run twice, once in a plain project and once with the
 crew installed, on the same small Dart project. Every task is scored by an
 objective check, not by opinion. Run it on your machine and
-[share the table](https://github.com/saimskywalker/warriors-of-light-ai-agents/issues/new?template=benchmark.yml):
+[share the table](https://github.com/saimskywalker/lumenparty/issues/new?template=benchmark.yml):
 results from many machines and models beat any claim we could write.
 
 ## Run it

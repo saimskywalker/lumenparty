@@ -1,10 +1,10 @@
 {
-  "name": "warriors-of-light",
+  "name": "lumenparty",
   "owner": { "name": "saimskywalker", "url": "https://github.com/saimskywalker" },
-  "description": "Warriors of Light: a guarded crew of subagents, skills and hooks for Flutter, mobile and web apps.",
+  "description": "lumenparty: a guarded crew of subagents, skills and hooks for Flutter, mobile and web apps.",
   "plugins": [
     {
-      "name": "warriors-of-light",
+      "name": "lumenparty",
       "source": "./",
       "description": "16 subagents, 14 skills, zero-token guard hooks and a merge gate for Flutter, mobile and web apps.",
       "category": "development",

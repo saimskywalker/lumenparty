@@ -46,8 +46,8 @@ if [[ "${WOL_FULL_SUITE_BLOCK:-1}" == 1 ]]; then
 fi
 
 # 3. heavy commands go through the queue
-if [[ -n "${WOL_HEAVY:-}" ]] && has "${seg}(${WOL_HEAVY})\b" && ! has 'spells/slow\.sh|(^|[;&|/[:space:]])wol[[:space:]]+slow\b'; then
-  deny "heavy command; queue it: wol slow '<command>' (after install.sh: .claude/wol/bin/wol slow '<command>'): one at a time, low priority, memory check, time limit, log."
+if [[ -n "${WOL_HEAVY:-}" ]] && has "${seg}(${WOL_HEAVY})\b" && ! has 'spells/slow\.sh|(^|[;&|/[:space:]])(lumenparty|wol)[[:space:]]+slow\b'; then
+  deny "heavy command; queue it: lumenparty slow '<command>' (after install.sh: .claude/wol/bin/lumenparty slow '<command>'): one at a time, low priority, memory check, time limit, log."
 fi
 
 # 4. every road to a protected branch

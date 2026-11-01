@@ -4,19 +4,19 @@ import os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 S = {}
 
-S["cosmos"] = ("""Load when the owner says "Warriors of Light, assemble!" (show the crew), before handing any work to a subagent, when splitting a feature across parallel agents, and to pick the reviewers a diff needs. Decides self vs agent first.""", """
+S["cosmos"] = ("""Load when the owner says "Lumenparty, assemble!" (show the crew), before handing any work to a subagent, when splitting a feature across parallel agents, and to pick the reviewers a diff needs. Decides self vs agent first.""", """
 # Cosmos: the one who summons
 
-The owner is **Cosmos**, the one who summons the Warriors of Light. The main
+The owner is **Cosmos**, the one who summons the party. The main
 session acts in the owner's name and decides who is called.
 
-## Summon: "Warriors of Light, assemble!"
+## Summon: "Lumenparty, assemble!"
 
 SHOW the crew, spawn NOTHING. Answer in the owner's language
 (`WOL_LANG` in `.claude/wol/config.sh`), opening with:
 
-> 「光の戦士たちよ、クリスタルが汝らを選んだ。集え——このコードに調和を取り戻すために。」
-> *"Warriors of Light, the crystals have chosen you. Gather, and restore harmony to this code."* — Cosmos
+> 「仲間たちよ、クリスタルが汝らを選んだ。集え——このコードに調和を取り戻すために。」
+> *"Party, the crystals have chosen you. Gather, and restore harmony to this code."* — Cosmos
 
 Then, one screen: the self-first rule; the heroes (name, role, model,
 access); the skills and when each loads; the spells; the Crystal Gate; the
@@ -48,8 +48,8 @@ Reviewers return a VERDICT block, never diffs or logs.
 | UI files | rosa (skill, advisory) |
 | `WOL_GATE_HUMAN`: CI, release, infra | a human merges |
 
-`wol gate <N> --report` prints the same list for a PR. (`wol` is on PATH with
-the plugin; after install.sh it is `.claude/wol/bin/wol`.)
+`lumenparty gate <N> --report` prints the same list for a PR. (`lumenparty` is on PATH with
+the plugin; after install.sh it is `.claude/wol/bin/lumenparty`.)
 PASS continues, BLOCK is a fix round, NEEDS-HUMAN stops and asks.
 
 ## 2. A parallel job
@@ -128,8 +128,8 @@ A black mage who never wastes a spell. The machine is shared by the session
 and every hero; heavy work runs one at a time.
 
 1. Heavy commands (`WOL_HEAVY`) run only through the queue, never directly:
-   `wol slow 'flutter test test/a_test.dart test/b_test.dart'` (after install.sh:
-   `.claude/wol/bin/wol slow '...'`).
+   `lumenparty slow 'flutter test test/a_test.dart test/b_test.dart'` (after install.sh:
+   `.claude/wol/bin/lumenparty slow '...'`).
    The Protect spell denies them otherwise.
 2. Narrowest command that proves the change: the touched test files, the
    touched files' analysis. Never the full suite locally; that is CI's job.
@@ -137,7 +137,7 @@ and every hero; heavy work runs one at a time.
    creating `.claude/wol/allow-local`; never create it yourself.
 4. Parallel heroes are fine; parallel heavy runs are not.
 5. Quote globs; prefer the tool's own timeout parameter.
-6. `wol libra` shows the queue holder, heavy processes,
+6. `lumenparty libra` shows the queue holder, heavy processes,
    free memory and recent runs. A stale lock is reclaimed automatically.
 """)
 
@@ -212,7 +212,7 @@ tonight only.
 2. Merge method: the owner's word, else `WOL_MERGE_METHOD`.
 3. Not in auto mode? Say "switch to auto mode before sleeping" and list
    what will run.
-4. `wol awake start`; for each PR `date +%F > .claude/wol/active/<N>`.
+4. `lumenparty awake start`; for each PR `date +%F > .claude/wol/active/<N>`.
 
 ## The run
 1. Finish only the agreed work. Commits per ignis, push the feature branch.
@@ -221,7 +221,7 @@ tonight only.
    rounds, then stop that PR.
 3. Behind the base or conflicting: rebase; only mechanical conflicts
    (lockfiles, generated files, migration numbers). Otherwise abort, stop.
-4. Reviews on the FINAL head: `wol gate <N> --report` names them. Write each
+4. Reviews on the FINAL head: `lumenparty gate <N> --report` names them. Write each
    reviewer's block to `.claude/wol/verdicts/<N>-<agent>.txt` plus a line
    `SHA: <head>`. Copy the VERDICT line verbatim; never write PASS yourself.
 5. `gh pr merge <N> --<method>` and nothing else. The Crystal Gate refuses
@@ -231,7 +231,7 @@ tonight only.
 
 ## Rest
 yuna writes the handoff (merged, or stopped and why), stop the background
-waiters, then `wol rest` (dev stack down; powers off only
+waiters, then `lumenparty rest` (dev stack down; powers off only
 if `WOL_SHUTDOWN=1`).
 """)
 

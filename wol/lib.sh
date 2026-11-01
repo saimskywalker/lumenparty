@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-# Warriors of Light — shared paths for every spell. Sourced, never run.
+# lumenparty — shared paths for every spell. Sourced, never run.
 #   WOL      the code: <plugin root>/wol (plugin) or <project>/.claude/wol (install.sh)
 #   PROJECT  the project root
 #   STATE    the project's own config and runtime state: <project>/.claude/wol
