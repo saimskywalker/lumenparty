@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The Warriors of Light benchmark: the same tasks, run in a plain project and
+# The lumenparty benchmark: the same tasks, run in a plain project and
 # in one with the crew installed, scored by objective checks.
 #
 #   bench/run.sh                       every task, both arms, 1 run each
@@ -96,4 +96,4 @@ report="$OUT/$stamp.md"
 cat "$report"
 echo
 echo "Saved: $report"
-echo "Share it: https://github.com/saimskywalker/warriors-of-light-ai-agents/issues/new?template=benchmark.yml"
+echo "Share it: https://github.com/saimskywalker/lumenparty/issues/new?template=benchmark.yml"

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dismiss the Warriors of Light from a project.   ./uninstall.sh [--keep-config] <repo>
+# Dismiss the party from a project.           ./uninstall.sh [--keep-config] <repo>
 # Removes the heroes, skills and spells this repo installed, its hook
 # entries, and its .git/info/exclude lines. With --keep-config, .claude/wol/
 # config.sh and thresholds.md stay.
@@ -19,7 +19,8 @@ done
 ex="$(git -C "$dst" rev-parse --git-common-dir)/info/exclude"; [[ "$ex" = /* ]] || ex="$dst/$ex"
 if [[ -f "$ex" ]]; then
   ours="$( { echo ".claude/wol/"; for f in "$SRC"/agents/*.md; do echo ".claude/agents/$(basename "$f")"; done
-             for d in "$SRC"/skills/*/; do echo ".claude/skills/$(basename "$d")/"; done; echo "# Warriors of Light (personal)"; } )"
+             for d in "$SRC"/skills/*/; do echo ".claude/skills/$(basename "$d")/"; done; echo "# lumenparty (personal)"
+             echo "# Warriors of Light (personal)"; } )"   # marker from before the rename
   grep -vxF -f <(echo "$ours") "$ex" >"$ex.tmp" || true; mv "$ex.tmp" "$ex"
 fi
-echo "The Warriors of Light have returned to the crystal."
+echo "The party has returned to the crystal."

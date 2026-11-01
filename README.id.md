@@ -1,18 +1,18 @@
 <div align="center">
 
-# ✦ Warriors of Light ✦
+# ✦ lumenparty ✦
 
 **AI agent untuk Claude Code, khusus app Flutter, mobile, dan web.**
 16 hero. 14 skill. 5 spell yang tidak makan token. Satu gerbang yang tidak bisa diterobos merge sembarangan.
 
 [English](README.md) · **Bahasa Indonesia**
 
-[![ci](https://github.com/saimskywalker/warriors-of-light-ai-agents/actions/workflows/ci.yml/badge.svg)](https://github.com/saimskywalker/warriors-of-light-ai-agents/actions/workflows/ci.yml)
+[![ci](https://github.com/saimskywalker/lumenparty/actions/workflows/ci.yml/badge.svg)](https://github.com/saimskywalker/lumenparty/actions/workflows/ci.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/built%20for-Claude%20Code-d97757)](https://docs.anthropic.com/en/docs/claude-code)
 
-> 「光の戦士たちよ、クリスタルが汝らを選んだ。集え——このコードに調和を取り戻すために。」
-> *"Para Warriors of Light, kristal telah memilih kalian. Berkumpullah, dan kembalikan keteraturan ke kode ini."*
+> 「仲間たちよ、クリスタルが汝らを選んだ。集え——このコードに調和を取り戻すために。」
+> *"Wahai party, kristal telah memilih kalian. Berkumpullah, dan kembalikan keteraturan ke kode ini."*
 
 </div>
 
@@ -38,7 +38,7 @@ AI agent itu cepat, dan justru di situ masalahnya. Kalau dilepas begitu saja, me
 - **merge dan push yang tidak seharusnya**;
 - **lupa aturan** yang kamu tulis di prompt tiga jam sebelumnya.
 
-Warriors of Light menjawab masing-masing dengan aturan yang tidak bisa lupa:
+lumenparty menjawab masing-masing dengan aturan yang tidak bisa lupa:
 
 | Masalah | Solusinya |
 |---|---|
@@ -53,26 +53,26 @@ Warriors of Light menjawab masing-masing dengan aturan yang tidak bisa lupa:
 **Sebagai plugin Claude Code** (disarankan). Ketik ini di dalam Claude Code:
 
 ```
-/plugin install warriors-of-light --marketplace saimskywalker/warriors-of-light-ai-agents
+/plugin install lumenparty --marketplace saimskywalker/lumenparty
 ```
 
 Kalau Claude Code-mu versi lama, tambahkan marketplace-nya dulu:
-`/plugin marketplace add saimskywalker/warriors-of-light-ai-agents`, lalu
-`/plugin install warriors-of-light@warriors-of-light`.
+`/plugin marketplace add saimskywalker/lumenparty`, lalu
+`/plugin install lumenparty@lumenparty`.
 
 Setelah itu, di folder app-mu, buat setelan project sekali saja (pilih preset):
 
 ```bash
-wol init flutter      # atau: web | fullstack
+lumenparty init flutter      # atau: web | fullstack
 ```
 
 Lalu panggil mereka:
 
 ```
-Warriors of Light, assemble!
+Lumenparty, assemble!
 ```
 
-Agent dan skill dari plugin punya awalan namanya sendiri (`warriors-of-light:noctis`),
+Agent dan skill dari plugin punya awalan namanya sendiri (`lumenparty:noctis`),
 jadi tidak bentrok dengan agent milikmu. Setelan dan file sementara disimpan
 di `.claude/wol/` project-mu. Commit `config.sh` kalau ingin setelannya
 dipakai bareng tim.
@@ -80,8 +80,8 @@ dipakai bareng tim.
 **Tanpa plugin** (dipasang ke satu project lewat script):
 
 ```bash
-git clone https://github.com/saimskywalker/warriors-of-light-ai-agents.git
-./warriors-of-light-ai-agents/install.sh --preset flutter ~/code/my-app   # tambah --team untuk di-commit bareng tim
+git clone https://github.com/saimskywalker/lumenparty.git
+./lumenparty/install.sh --preset flutter ~/code/my-app   # tambah --team untuk di-commit bareng tim
 ```
 
 Defaultnya pribadi: semua file masuk ke `.claude/` dan disembunyikan dari git
@@ -89,18 +89,19 @@ lewat `.git/info/exclude`. Hapus kapan saja dengan `./uninstall.sh ~/code/my-app
 
 Butuh `jq`, `git`, `perl`, dan `gh` untuk merge gate. Jalan di macOS dan Linux.
 
-### Perintah `wol`
+### Perintah `lumenparty`
 
 | Perintah | Fungsinya |
 |---|---|
-| `wol init <preset>` | membuat `.claude/wol/config.sh` untuk project ini |
-| `wol slow '<perintah>'` | menjalankan perintah berat lewat antrian |
-| `wol gate <pr> --report` | menampilkan semua syarat Crystal Gate untuk satu PR |
-| `wol libra` | siapa yang pegang antrian, proses berat, RAM bebas, riwayat terakhir |
-| `wol awake start` / `wol rest` | dipakai Laguna: jaga laptop tetap menyala, lalu beres-beres di akhir |
+| `lumenparty init <preset>` | membuat `.claude/wol/config.sh` untuk project ini |
+| `lumenparty slow '<perintah>'` | menjalankan perintah berat lewat antrian |
+| `lumenparty gate <pr> --report` | menampilkan semua syarat Crystal Gate untuk satu PR |
+| `lumenparty libra` | siapa yang pegang antrian, proses berat, RAM bebas, riwayat terakhir |
+| `lumenparty awake start` / `lumenparty rest` | dipakai Laguna: jaga laptop tetap menyala, lalu beres-beres di akhir |
 
-Kalau pakai plugin, `wol` langsung ada di PATH. Kalau lewat `install.sh`,
-perintahnya ada di `.claude/wol/bin/wol`.
+Kalau pakai plugin, `lumenparty` langsung ada di PATH. Kalau lewat `install.sh`,
+perintahnya ada di `.claude/wol/bin/lumenparty`. Perintah lama `wol` masih bisa
+dipakai sebagai alias.
 
 ## ⚔️ Para hero (sub-agent)
 
@@ -191,7 +192,7 @@ terpisah yang melakukan push, alias di profil shell-mu, atau program di
 - ada verdict `PASS` untuk commit ini dari setiap reviewer yang dibutuhkan diff-nya.
 
 ```bash
-wol gate 12 --report
+lumenparty gate 12 --report
 ✓ author is the owner
 ✓ mergeable, no conflict
 ✗ checks not green: test=IN_PROGRESS
@@ -249,8 +250,8 @@ bench/run.sh --dry            # gratis: cek alurnya saja
 bench/run.sh --runs 3         # sesi sungguhan; laporannya mencantumkan biaya
 ```
 
-Lalu [bagikan tabel hasilnya](https://github.com/saimskywalker/warriors-of-light-ai-agents/issues/new?template=benchmark.yml)
-atau [ceritakan hero yang keliru](https://github.com/saimskywalker/warriors-of-light-ai-agents/issues/new?template=feedback.yml).
+Lalu [bagikan tabel hasilnya](https://github.com/saimskywalker/lumenparty/issues/new?template=benchmark.yml)
+atau [ceritakan hero yang keliru](https://github.com/saimskywalker/lumenparty/issues/new?template=feedback.yml).
 Kami tidak memasang angka apa pun sebelum ada hasil dari orang-orang seperti kamu.
 Detailnya: [bench/README.md](bench/README.md).
 

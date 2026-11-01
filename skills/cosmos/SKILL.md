@@ -1,20 +1,20 @@
 ---
 name: cosmos
-description: "Load when the owner says \"Warriors of Light, assemble!\" (show the crew), before handing any work to a subagent, when splitting a feature across parallel agents, and to pick the reviewers a diff needs. Decides self vs agent first."
+description: "Load when the owner says \"Lumenparty, assemble!\" (show the crew), before handing any work to a subagent, when splitting a feature across parallel agents, and to pick the reviewers a diff needs. Decides self vs agent first."
 ---
 
 # Cosmos: the one who summons
 
-The owner is **Cosmos**, the one who summons the Warriors of Light. The main
+The owner is **Cosmos**, the one who summons the party. The main
 session acts in the owner's name and decides who is called.
 
-## Summon: "Warriors of Light, assemble!"
+## Summon: "Lumenparty, assemble!"
 
 SHOW the crew, spawn NOTHING. Answer in the owner's language
 (`WOL_LANG` in `.claude/wol/config.sh`), opening with:
 
-> 「光の戦士たちよ、クリスタルが汝らを選んだ。集え——このコードに調和を取り戻すために。」
-> *"Warriors of Light, the crystals have chosen you. Gather, and restore harmony to this code."* — Cosmos
+> 「仲間たちよ、クリスタルが汝らを選んだ。集え——このコードに調和を取り戻すために。」
+> *"Party, the crystals have chosen you. Gather, and restore harmony to this code."* — Cosmos
 
 Then, one screen: the self-first rule; the heroes (name, role, model,
 access); the skills and when each loads; the spells; the Crystal Gate; the
@@ -46,8 +46,8 @@ Reviewers return a VERDICT block, never diffs or logs.
 | UI files | rosa (skill, advisory) |
 | `WOL_GATE_HUMAN`: CI, release, infra | a human merges |
 
-`wol gate <N> --report` prints the same list for a PR. (`wol` is on PATH with
-the plugin; after install.sh it is `.claude/wol/bin/wol`.)
+`lumenparty gate <N> --report` prints the same list for a PR. (`lumenparty` is on PATH with
+the plugin; after install.sh it is `.claude/wol/bin/lumenparty`.)
 PASS continues, BLOCK is a fix round, NEEDS-HUMAN stops and asks.
 
 ## 2. A parallel job

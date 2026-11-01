@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Renamed to lumenparty (from Warriors of Light, `warriors-of-light-ai-agents`).
+  The plugin is now `lumenparty`: reinstall with `/plugin install lumenparty
+  --marketplace saimskywalker/lumenparty`, and plugin agents and skills are
+  namespaced `lumenparty:<name>`. The command is now `lumenparty`; `wol` stays
+  as an alias. The summon is "Lumenparty, assemble!". Settings and state stay
+  in `.claude/wol/`.
+
 ## 0.2.0 — 2026-10-22
 
 - `bench/`: four tasks scored by objective checks, run in a plain project

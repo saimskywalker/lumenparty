@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Summon the Warriors of Light into a project.
+# Summon the party into a project.
 #
 #   ./install.sh [--preset flutter|web|fullstack] [--team] <path-to-your-repo>
 #
@@ -34,7 +34,7 @@ for d in "$SRC"/skills/*/; do n="$(basename "$d")"; mkdir -p "$C/skills/$n"; cp 
 # spells, gate, presets; config only if absent
 mkdir -p "$W/spells" "$W/crystal" "$W/active" "$W/verdicts" "$W/presets" "$W/bin"
 cp "$SRC"/wol/spells/*.sh "$W/spells/"; cp "$SRC"/wol/crystal/*.sh "$W/crystal/"
-cp "$SRC/wol/lib.sh" "$W/"; cp "$SRC/bin/wol" "$W/bin/wol"
+cp "$SRC/wol/lib.sh" "$W/"; cp "$SRC/bin/lumenparty" "$SRC/bin/wol" "$W/bin/"
 cp "$SRC"/wol/presets/*.sh "$W/presets/"
 [[ -f "$W/thresholds.md" ]] || cp "$SRC/wol/thresholds.md" "$W/"
 if [[ ! -f "$W/config.sh" ]]; then
@@ -46,7 +46,7 @@ if [[ ! -f "$W/config.sh" ]]; then
   login="$(gh api user --jq .login 2>/dev/null || true)"
   [[ -n "$login" ]] && perl -pi -e "s/^WOL_OWNER=\"\"/WOL_OWNER=\"$login\"/" "$W/config.sh"
 fi
-chmod +x "$W"/spells/*.sh "$W"/crystal/*.sh "$W/bin/wol"
+chmod +x "$W"/spells/*.sh "$W"/crystal/*.sh "$W/bin/lumenparty" "$W/bin/wol"
 
 # hooks: drop our old entries, add the current ones, keep everything else
 # shellcheck source=/dev/null
@@ -66,7 +66,7 @@ if (( ! team )); then
   ex="$(git -C "$dst" rev-parse --git-common-dir)/info/exclude"; [[ "$ex" = /* ]] || ex="$dst/$ex"
   mkdir -p "$(dirname "$ex")"; touch "$ex"
   add() { grep -qxF "$1" "$ex" || echo "$1" >>"$ex"; }
-  grep -q 'Warriors of Light' "$ex" || printf '\n# Warriors of Light (personal)\n' >>"$ex"
+  grep -qxF "# lumenparty (personal)" "$ex" || printf "\n# lumenparty (personal)\n" >>"$ex"
   add ".claude/wol/"; add ".claude/settings.local.json"
   for f in "$SRC"/agents/*.md; do add ".claude/agents/$(basename "$f")"; done
   for d in "$SRC"/skills/*/; do add ".claude/skills/$(basename "$d")/"; done
@@ -74,7 +74,7 @@ fi
 # runtime state is never committed, in either mode
 printf 'heavy.lock/\nslow.log\nallow-local\nactive/\nverdicts/\n*.pid\n' >"$W/.gitignore"
 
-echo "✦ The Warriors of Light have answered: $(ls "$SRC"/agents | wc -l | tr -d ' ') heroes, $(ls "$SRC"/skills | wc -l | tr -d ' ') skills, 5 spells."
+echo "✦ The party has answered: $(ls "$SRC"/agents | wc -l | tr -d ' ') heroes, $(ls "$SRC"/skills | wc -l | tr -d ' ') skills, 5 spells."
 echo "  config: $W/config.sh (owner: ${WOL_OWNER:-<set WOL_OWNER>})"
 (( team )) && echo "  team mode: commit .claude/ to share the crew." || echo "  personal mode: hidden from git."
-echo "  Open a NEW Claude Code session in $dst and say: Warriors of Light, assemble!"
+echo "  Open a NEW Claude Code session in $dst and say: Lumenparty, assemble!"

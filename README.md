@@ -1,18 +1,18 @@
 <div align="center">
 
-# ✦ Warriors of Light ✦
+# ✦ lumenparty ✦
 
 **English** · [Bahasa Indonesia](README.id.md)
 
 **AI agents for Claude Code, built for Flutter, mobile and web apps.**
 16 heroes. 14 skills. 5 spells that cost zero tokens. One gate no merge gets past.
 
-[![ci](https://github.com/saimskywalker/warriors-of-light-ai-agents/actions/workflows/ci.yml/badge.svg)](https://github.com/saimskywalker/warriors-of-light-ai-agents/actions/workflows/ci.yml)
+[![ci](https://github.com/saimskywalker/lumenparty/actions/workflows/ci.yml/badge.svg)](https://github.com/saimskywalker/lumenparty/actions/workflows/ci.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/built%20for-Claude%20Code-d97757)](https://docs.anthropic.com/en/docs/claude-code)
 
-> 「光の戦士たちよ、クリスタルが汝らを選んだ。集え——このコードに調和を取り戻すために。」
-> *"Warriors of Light, the crystals have chosen you. Gather, and restore harmony to this code."*
+> 「仲間たちよ、クリスタルが汝らを選んだ。集え——このコードに調和を取り戻すために。」
+> *"Party, the crystals have chosen you. Gather, and restore harmony to this code."*
 
 </div>
 
@@ -36,7 +36,7 @@ AI coding agents are fast, and that is the problem. Left alone they:
 - **merge things they should not**, and push where they should not;
 - **forget the rules** you wrote in a prompt three hours ago.
 
-Warriors of Light answers each one with something that cannot forget:
+lumenparty answers each one with something that cannot forget:
 
 | Problem | Answer |
 |---|---|
@@ -51,34 +51,34 @@ Warriors of Light answers each one with something that cannot forget:
 **As a Claude Code plugin** (recommended), inside Claude Code:
 
 ```
-/plugin install warriors-of-light --marketplace saimskywalker/warriors-of-light-ai-agents
+/plugin install lumenparty --marketplace saimskywalker/lumenparty
 ```
 
 On an older Claude Code, add the marketplace first:
-`/plugin marketplace add saimskywalker/warriors-of-light-ai-agents`, then
-`/plugin install warriors-of-light@warriors-of-light`.
+`/plugin marketplace add saimskywalker/lumenparty`, then
+`/plugin install lumenparty@lumenparty`.
 
 Then, in your app's folder, write the project's settings once (pick a preset):
 
 ```bash
-wol init flutter      # or: web | fullstack
+lumenparty init flutter      # or: web | fullstack
 ```
 
 and say:
 
 ```
-Warriors of Light, assemble!
+Lumenparty, assemble!
 ```
 
-Plugin agents and skills are namespaced (`warriors-of-light:noctis`), so
+Plugin agents and skills are namespaced (`lumenparty:noctis`), so
 they never collide with your own. Settings and runtime state live in your
 project's `.claude/wol/`; commit `config.sh` to share it with your team.
 
 **Without plugins** (a script install into one project):
 
 ```bash
-git clone https://github.com/saimskywalker/warriors-of-light-ai-agents.git
-./warriors-of-light-ai-agents/install.sh --preset flutter ~/code/my-app   # add --team to commit the crew
+git clone https://github.com/saimskywalker/lumenparty.git
+./lumenparty/install.sh --preset flutter ~/code/my-app   # add --team to commit the crew
 ```
 
 Personal by default: everything lands in `.claude/` and is hidden from git
@@ -86,18 +86,18 @@ through `.git/info/exclude`. Remove it with `./uninstall.sh ~/code/my-app`.
 
 Needs `jq`, `git`, `perl`, and `gh` for the merge gate. macOS or Linux.
 
-### The `wol` command
+### The `lumenparty` command
 
 | Command | What it does |
 |---|---|
-| `wol init <preset>` | writes `.claude/wol/config.sh` for this project |
-| `wol slow '<command>'` | runs a heavy command through the queue |
-| `wol gate <pr> --report` | shows every Crystal Gate condition for a PR |
-| `wol libra` | queue holder, heavy processes, free memory, recent runs |
-| `wol awake start` / `wol rest` | Laguna's keep-awake and end-of-run |
+| `lumenparty init <preset>` | writes `.claude/wol/config.sh` for this project |
+| `lumenparty slow '<command>'` | runs a heavy command through the queue |
+| `lumenparty gate <pr> --report` | shows every Crystal Gate condition for a PR |
+| `lumenparty libra` | queue holder, heavy processes, free memory, recent runs |
+| `lumenparty awake start` / `lumenparty rest` | Laguna's keep-awake and end-of-run |
 
-With the plugin, `wol` is on your PATH; after `install.sh` it is
-`.claude/wol/bin/wol`.
+With the plugin, `lumenparty` is on your PATH; after `install.sh` it is
+`.claude/wol/bin/lumenparty`. The old `wol` command still works as an alias.
 
 ## ⚔️ The heroes (subagents)
 
@@ -189,7 +189,7 @@ your `PATH` is out of its sight. Keep GitHub branch protection on as well.
 - a `PASS` verdict for this exact commit from each reviewer the diff needs.
 
 ```bash
-wol gate 12 --report
+lumenparty gate 12 --report
 ✓ author is the owner
 ✓ mergeable, no conflict
 ✗ checks not green: test=IN_PROGRESS
@@ -251,8 +251,8 @@ bench/run.sh --dry            # free: checks the plumbing
 bench/run.sh --runs 3         # real sessions; the report prints the cost
 ```
 
-Then [share your table](https://github.com/saimskywalker/warriors-of-light-ai-agents/issues/new?template=benchmark.yml)
-or [tell us what a hero got wrong](https://github.com/saimskywalker/warriors-of-light-ai-agents/issues/new?template=feedback.yml).
+Then [share your table](https://github.com/saimskywalker/lumenparty/issues/new?template=benchmark.yml)
+or [tell us what a hero got wrong](https://github.com/saimskywalker/lumenparty/issues/new?template=feedback.yml).
 We publish no numbers until they come from runs like yours. Details: [bench/README.md](bench/README.md).
 
 ## FAQ

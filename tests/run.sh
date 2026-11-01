@@ -37,15 +37,18 @@ check test-note additionalContext "$(mk test/d_test.dart 600)"
 P="$(mktemp -d)"; git -C "$P" init -q -b feature/x
 ok() { if eval "$2"; then pass=$((pass + 1)); else fail=$((fail + 1)); echo "FAIL plugin $1"; fi; }
 for f in .claude-plugin/plugin.json .claude-plugin/marketplace.json hooks/hooks.json; do ok "json $f" "jq empty '$SRC/$f'"; done
-(cd "$P" && "$SRC/bin/wol" init flutter >/dev/null)
+(cd "$P" && "$SRC/bin/lumenparty" init flutter >/dev/null)
 ok "init writes config" "grep -q 'preset: flutter' '$P/.claude/wol/config.sh'"
 echo "WOL_PROTECTED='main|trunk'" >>"$P/.claude/wol/config.sh"
 pdecide() { jq -n --arg c "$1" '{tool_input:{command:$c}}' | CLAUDE_PROJECT_DIR="$P" "$SRC/wol/spells/protect.sh" | jq -rs '.[0].hookSpecificOutput.permissionDecision // "allow"'; }
 ok "project config overrides" "[[ \$(pdecide 'git push origin trunk') == deny ]]"
 ok "defaults still apply" "[[ \$(pdecide 'flutter test') == deny ]]"
-ok "wol slow is the queue" "[[ \$(pdecide \"wol slow 'flutter test test/a_test.dart'\") == allow ]]"
-ok "install-path wol slow" "[[ \$(pdecide \".claude/wol/bin/wol slow 'flutter test test/a_test.dart'\") == allow ]]"
-(cd "$P" && CLAUDE_PROJECT_DIR="$P" "$SRC/bin/wol" slow 'true' 2>/dev/null)
+ok "lumenparty slow is the queue" "[[ \$(pdecide \"lumenparty slow 'flutter test test/a_test.dart'\") == allow ]]"
+ok "install-path lumenparty slow" "[[ \$(pdecide \".claude/wol/bin/lumenparty slow 'flutter test test/a_test.dart'\") == allow ]]"
+ok "wol alias slow is the queue" "[[ \$(pdecide \"wol slow 'flutter test test/a_test.dart'\") == allow ]]"
+ok "install-path wol alias slow" "[[ \$(pdecide \".claude/wol/bin/wol slow 'flutter test test/a_test.dart'\") == allow ]]"
+ok "wol alias runs lumenparty" "'$SRC/bin/wol' help | grep -q 'lumenparty init'"
+(cd "$P" && CLAUDE_PROJECT_DIR="$P" "$SRC/bin/lumenparty" slow 'true' 2>/dev/null)
 ok "state lives in the project" "grep -q 'END exit=0' '$P/.claude/wol/slow.log' && [[ -f '$P/.claude/wol/.gitignore' ]]"
 ok "plugin folder stays clean" "[[ ! -e '$SRC/wol/slow.log' && ! -e '$SRC/wol/heavy.lock' ]]"
 ok "state is ignored by git" "[[ -z \$(git -C '$P' status --porcelain -uall -- .claude/wol | grep -v config.sh | grep -v thresholds.md | grep -v .gitignore) ]]"
