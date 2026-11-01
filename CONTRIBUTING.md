@@ -27,3 +27,16 @@ Thanks for joining the party.
 
 One topic per PR, a clear description of the behaviour change, and the
 `tests/run.sh` output.
+
+## AI-assisted contributions
+
+Using AI tools is fine; please just be open about it.
+
+- Say in the PR description which AI tools you used, if any: none, some or
+  most, plus the tool or agent and the model (for example "Claude Code,
+  Opus 5.5" or "Copilot, GPT-5").
+- Write the PR description and any issues yourself, in your own words.
+  Short, plain descriptions are welcome; please don't paste generated text.
+- Read, run and test every line you submit, and be ready to explain it in
+  review.
+- PRs without the disclosure may be closed.
