@@ -8,6 +8,7 @@
 #   lumenparty libra                          queue, heavy processes, memory, recent runs
 #   lumenparty awake start|stop|status        keep the machine awake (Laguna)
 #   lumenparty rest [--dry]                   end of the midnight run
+#   lumenparty models [profile|set|apply]     choose the model each hero runs on
 set -uo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 if [[ -d "$here/../wol/spells" ]]; then W="$(cd "$here/../wol" && pwd)"   # plugin root
@@ -19,6 +20,7 @@ case "$sub" in
   libra) exec "$W/spells/libra.sh" "$@" ;;
   awake) exec "$W/crystal/awake.sh" "$@" ;;
   rest)  exec "$W/crystal/rest.sh" "$@" ;;
+  models) exec "$W/models.sh" "$@" ;;
   init)
     root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"; dst="$root/.claude/wol/config.sh"
     [[ -f "$dst" ]] && { echo "already configured: $dst"; exit 0; }
@@ -31,5 +33,5 @@ case "$sub" in
     login="$(gh api user --jq .login 2>/dev/null || true)"
     [[ -n "$login" ]] && perl -pi -e "s/^WOL_OWNER=\"\"/WOL_OWNER=\"$login\"/" "$dst"
     echo "wrote $dst (owner: ${login:-<set WOL_OWNER>}). Commit it to share the settings with your team." ;;
-  *) sed -n 2,11p "$0" ;;
+  *) sed -n 2,12p "$0" ;;
 esac

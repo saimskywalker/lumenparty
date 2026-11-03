@@ -95,6 +95,7 @@ Needs `jq`, `git`, `perl`, and `gh` for the merge gate. macOS or Linux.
 | `lumenparty gate <pr> --report` | shows every Crystal Gate condition for a PR |
 | `lumenparty libra` | queue holder, heavy processes, free memory, recent runs |
 | `lumenparty awake start` / `lumenparty rest` | Laguna's keep-awake and end-of-run |
+| `lumenparty models` | which model each hero runs on; `profile` / `set` to change it |
 
 With the plugin, `lumenparty` is on your PATH; after `install.sh` it is
 `.claude/wol/bin/lumenparty`. The old `wol` command still works as an alias.
@@ -129,6 +130,35 @@ FINDINGS:
 - [HIGH] lib/purchase/verify.dart:42 — receipt trusted from the client, never checked with the store
 SUMMARY: one HIGH: server-side receipt validation is missing
 ```
+
+### Choosing models
+
+The table shows the **balanced** default: Opus where a missed finding is
+expensive (Squall, Noctis, Firion, Cecil), Haiku for mechanical reading
+(Lightning, Vaan), Sonnet for everything that builds or explains. Change it
+per project with one command; the choice lives in `.claude/wol/config.sh`.
+
+```bash
+lumenparty models                       # every hero: shipped, override, runs on
+lumenparty models profile quality       # Sonnet heroes on Opus, Haiku heroes on Sonnet
+lumenparty models profile economy       # Opus heroes on Sonnet (cheaper, faster)
+lumenparty models profile inherit       # every hero uses your session's model
+lumenparty models set squall sonnet     # one hero, on top of the profile
+lumenparty models set cloud opus
+lumenparty models set cloud default     # back to the profile
+```
+
+A model is `opus`, `sonnet`, `haiku`, `fable`, `inherit` or a full id such as
+`claude-opus-5-5`. Aliases follow the newest model of each family on the
+Anthropic API; on Bedrock, Vertex or Foundry they may map to older models, so
+pin a full id there.
+
+Per-hero models need the `install.sh` setup, which writes the heroes into
+`.claude/agents/` (re-running it keeps your choice). With the plugin, the
+heroes are read from the plugin folder: you can run every subagent on one
+model with `"env": {"CLAUDE_CODE_SUBAGENT_MODEL": "sonnet",
+"CLAUDE_CODE_SUBAGENT_MODEL_FORCE": "1"}` in `.claude/settings.local.json`
+(Claude Code 2.1.257 or later).
 
 ## ✨ The skills
 
@@ -263,6 +293,8 @@ need a source you have not connected say so and stop; everything else works.
 **Will it slow Claude down?** The spells are small shell scripts that run in
 milliseconds. The savings come from Cosmos doing small work itself instead
 of spawning agents.
+
+**Can I put a hero on another model?** Yes: `lumenparty models set <hero> <model>`, or a whole profile. See [Choosing models](#choosing-models).
 
 **Can I change the limits?** Everything is in `.claude/wol/config.sh`:
 protected branches, heavy commands, deploy commands, secret files, size

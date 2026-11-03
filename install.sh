@@ -34,7 +34,7 @@ for d in "$SRC"/skills/*/; do n="$(basename "$d")"; mkdir -p "$C/skills/$n"; cp 
 # spells, gate, presets; config only if absent
 mkdir -p "$W/spells" "$W/crystal" "$W/active" "$W/verdicts" "$W/presets" "$W/bin"
 cp "$SRC"/wol/spells/*.sh "$W/spells/"; cp "$SRC"/wol/crystal/*.sh "$W/crystal/"
-cp "$SRC/wol/lib.sh" "$W/"; cp "$SRC/bin/lumenparty" "$SRC/bin/wol" "$W/bin/"
+cp "$SRC/wol/lib.sh" "$SRC/wol/models.sh" "$SRC/wol/models.default" "$W/"; cp "$SRC/bin/lumenparty" "$SRC/bin/wol" "$W/bin/"
 cp "$SRC"/wol/presets/*.sh "$W/presets/"
 [[ -f "$W/thresholds.md" ]] || cp "$SRC/wol/thresholds.md" "$W/"
 if [[ ! -f "$W/config.sh" ]]; then
@@ -46,7 +46,9 @@ if [[ ! -f "$W/config.sh" ]]; then
   login="$(gh api user --jq .login 2>/dev/null || true)"
   [[ -n "$login" ]] && perl -pi -e "s/^WOL_OWNER=\"\"/WOL_OWNER=\"$login\"/" "$W/config.sh"
 fi
-chmod +x "$W"/spells/*.sh "$W"/crystal/*.sh "$W/bin/lumenparty" "$W/bin/wol"
+chmod +x "$W"/spells/*.sh "$W"/crystal/*.sh "$W/bin/lumenparty" "$W/bin/wol" "$W/models.sh"
+# keep the project's model choices across re-installs and updates
+CLAUDE_PROJECT_DIR="$dst" "$W/models.sh" apply >/dev/null
 
 # hooks: drop our old entries, add the current ones, keep everything else
 # shellcheck source=/dev/null
