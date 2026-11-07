@@ -1,9 +1,9 @@
 {
   "hooks": {
     "PreToolUse": [
-      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}\"/wol/spells/protect.sh", "timeout": 20, "statusMessage": "Protect: checking the command" }] },
-      { "matcher": "Read|Edit|Write", "hooks": [{ "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}\"/wol/spells/shell.sh", "timeout": 5 }] },
-      { "matcher": "mcp__.*(postgres|supabase|mysql|sql).*", "hooks": [{ "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}\"/wol/spells/silence.sh", "timeout": 5, "statusMessage": "Silence: checking the query" }] }
+      { "matcher": "Bash", "hooks": [{ "type": "command", "onFailure": "block", "command": "\"${CLAUDE_PLUGIN_ROOT}\"/wol/spells/protect.sh", "timeout": 20, "statusMessage": "Protect: checking the command" }] },
+      { "matcher": "Read|Edit|Write", "hooks": [{ "type": "command", "onFailure": "block", "command": "\"${CLAUDE_PLUGIN_ROOT}\"/wol/spells/shell.sh", "timeout": 5 }] },
+      { "matcher": "mcp__.*(postgres|supabase|mysql|sql).*", "hooks": [{ "type": "command", "onFailure": "block", "command": "\"${CLAUDE_PLUGIN_ROOT}\"/wol/spells/silence.sh", "timeout": 5, "statusMessage": "Silence: checking the query" }] }
     ],
     "PostToolUse": [
       { "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}\"/wol/spells/mini.sh", "timeout": 10 }] }

@@ -4,6 +4,15 @@
 # EXPLAIN (no ANALYZE) / SHOW go out, one statement, nothing that writes,
 # locks, sleeps or changes the session.
 set -euo pipefail
+# Fail closed: if anything below breaks (no jq, a broken config), refuse the
+# call with a fixed answer printed by printf, which needs nothing else.
+fail_closed() {
+  local rc=$?
+  (( rc == 0 )) && return
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s: the guard could not run (exit %s; is jq installed?), so this call is refused."}}\n' Silence "$rc"
+  exit 0
+}
+trap fail_closed EXIT
 sql="$(jq -r '.tool_input.sql // .tool_input.query // empty')"
 [[ -z "$sql" ]] && exit 0
 deny() {
