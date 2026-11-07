@@ -3,7 +3,7 @@
 # ✦ lumenparty ✦
 
 **AI agent untuk Claude Code, khusus app Flutter, mobile, dan web.**
-16 hero. 14 skill. 5 spell yang tidak makan token. Satu gerbang yang tidak bisa diterobos merge sembarangan.
+16 hero. 14 skill. 5 spell yang tidak makan token. Satu gerbang untuk `gh pr merge <N>`.
 
 [English](README.md) · **Bahasa Indonesia**
 
@@ -46,9 +46,9 @@ lumenparty menjawab masing-masing dengan aturan yang tidak bisa lupa:
 |---|---|
 | Kode kebanyakan | Urutan "malas" **Auron** (pakai yang sudah ada → standard library → fitur platform → kode seminimal mungkin), plus spell **Mini**: peringatan di 300 baris, diblokir di 500 baris per file |
 | Boros token | **Cosmos** mengerjakan sendiri dulu. Hero baru dipanggil untuk kerja paralel, baca banyak file, atau review. Haiku mengumpulkan, Sonnet membangun, Opus menilai risiko |
-| Laptop hang | Spell **Slow**: kerja berat jalan satu per satu, prioritas rendah, menunggu kalau RAM menipis, ada batas waktunya |
-| Merge berbahaya | Spell **Protect** menutup semua jalan ke branch yang dilindungi. **Crystal Gate** hanya mau merge kalau CI hijau, tidak ada konflik, dan reviewer bilang PASS |
-| Aturan terlupa | Pakai hook, bukan prompt: jalan di setiap tool call, untuk setiap agent, setiap saat |
+| Laptop hang | Spell **Slow**: kerja berat jalan satu per satu, prioritas rendah, menunggu RAM lega paling lama 5 menit, ada batas waktunya |
+| Merge berbahaya | Spell **Protect** memblokir bentuk push dan merge yang umum; tetap aktifkan branch protection di GitHub. **Crystal Gate** hanya mau merge kalau CI hijau, tidak ada konflik, dan reviewer bilang PASS |
+| Aturan terlupa | Pakai hook, bukan prompt: jalan di setiap panggilan Bash, Read, Edit, dan Write, untuk setiap agent; tanpa `jq` hook-nya tidak memblokir |
 
 ## Pasang dalam semenit
 
@@ -159,10 +159,10 @@ SUMMARY: satu temuan HIGH: validasi receipt di server belum ada
 
 | Spell | Mengawasi | Mencegah |
 |---|---|---|
-| **Protect** | setiap perintah shell | merge lokal; push ke `main` / `release/*`; push force, mirror, atau hapus branch; merge lewat `gh api`; `--admin`; tag produksi; `firebase deploy`, `vercel --prod`, `fastlane release`, `eas submit`; membuka file keystore |
-| **Shell** | setiap file yang dibaca dan diedit | signing key, service account, file env produksi |
+| **Protect** | setiap panggilan tool Bash | merge lokal; push (termasuk force) ke `main` / `release/*`; push mirror, `--all`, atau hapus branch; merge lewat `gh api`; `--admin`; tag produksi; `firebase deploy`, `vercel --prod`, `fastlane release`, `eas submit`; membuka file keystore |
+| **Shell** | panggilan Read/Edit/Write pada path yang cocok (huruf besar-kecil dibedakan) | signing key, service account, file env produksi |
 | **Silence** | tool SQL lewat MCP | apa pun selain SELECT / WITH / EXPLAIN / SHOW; lock; sleep; banyak statement sekaligus |
-| **Mini** | setiap edit | file yang membesar lewat 300 baris (peringatan) atau 500 baris (diblokir) |
+| **Mini** | setiap edit | file yang membesar lewat 300 baris (peringatan) atau 500 baris (blok dikirim balik setelah edit) |
 | **Slow** | perintah berat | kerja berat yang jalan barengan; RAM menipis; proses yang tidak berhenti |
 
 Semua polanya ada di satu file, `.claude/wol/config.sh`, dengan preset untuk Flutter, web, dan fullstack.
@@ -180,12 +180,20 @@ Ini pagar pengaman untuk agent, bukan sandbox untuk menahan penyerang. Script
 terpisah yang melakukan push, alias di profil shell-mu, atau program di
 `PATH`-mu ada di luar jangkauannya. Tetap aktifkan branch protection di GitHub.
 
+**Celah yang diketahui sampai 0.2.1.** Protect belum menangkap:
+
+- apa pun yang dijalankan lewat Slow: `lumenparty slow '<perintah>'`
+  menjalankan argumennya tanpa dicek;
+- perintah yang di-pipe atau dikirim ke shell (`echo '…' | sh`, `sh <<< '…'`);
+- interpreter lain (`python3 -c "os.system(…)"`, `perl -e`, `node -e`);
+- merge lewat API (`gh api graphql` dengan `mergePullRequest`, `curl -X PUT …/merge`).
+
 ## 🔮 Crystal Gate
 
-`gh pr merge` hanya bisa lewat gerbang ini, dan gerbangnya baru terbuka kalau
+`gh pr merge <N>` dicek oleh gerbang ini, dan gerbangnya baru terbuka kalau
 **semua** syarat berikut terpenuhi, dicek langsung ke GitHub saat merge:
 
-- Laguna dipanggil untuk PR ini **malam ini**, dan PR-nya milikmu;
+- ada token bertanggal hari ini yang ditulis skill Laguna untuk PR ini, dan PR-nya milikmu;
 - bukan draft, tidak ada label `needs-human`;
 - **bisa di-merge tanpa konflik**, status merge `CLEAN`, sudah up to date dengan base;
 - **semua check hijau** di commit terakhir;
@@ -262,8 +270,8 @@ Detailnya: [bench/README.md](bench/README.md).
 **Bisa jalan tanpa Figma, Crashlytics, atau database?** Bisa. Hero yang butuh
 sumber data yang belum kamu sambungkan akan bilang begitu lalu berhenti. Sisanya tetap jalan.
 
-**Apakah bikin Claude jadi lambat?** Spell-nya cuma script shell kecil yang
-selesai dalam hitungan milidetik. Penghematannya justru datang dari Cosmos
+**Apakah bikin Claude jadi lambat?** Spell-nya cuma script shell kecil; kebanyakan
+selesai dalam hitungan milidetik, dan merge gate butuh beberapa detik untuk bertanya ke GitHub. Penghematannya justru datang dari Cosmos
 yang mengerjakan tugas kecil sendiri tanpa memanggil agent.
 
 **Batasnya bisa diubah?** Semua ada di `.claude/wol/config.sh`: branch yang
