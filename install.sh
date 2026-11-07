@@ -43,7 +43,7 @@ if [[ ! -f "$W/config.sh" ]]; then
     [[ -f "$SRC/wol/presets/$preset.sh" ]] || { echo "unknown preset: $preset" >&2; exit 1; }
     { echo; echo "# --- preset: $preset ---"; cat "$SRC/wol/presets/$preset.sh"; } >>"$W/config.sh"
   fi
-  login="$(gh api user --jq .login 2>/dev/null || true)"
+  login="$(perl -e 'alarm shift; exec @ARGV' 4 gh api user --jq .login 2>/dev/null || true)"
   [[ -n "$login" ]] && perl -pi -e "s/^WOL_OWNER=\"\"/WOL_OWNER=\"$login\"/" "$W/config.sh"
 fi
 chmod +x "$W"/spells/*.sh "$W"/crystal/*.sh "$W/bin/lumenparty" "$W/bin/wol"

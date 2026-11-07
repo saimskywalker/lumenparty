@@ -10,6 +10,15 @@
 #   6. reading secret files;
 #   and sends `gh pr merge <N>` through the Crystal Gate.
 set -euo pipefail
+# Fail closed: if anything below breaks (no jq, a broken config), refuse the
+# call with a fixed answer printed by printf, which needs nothing else.
+fail_closed() {
+  local rc=$?
+  (( rc == 0 )) && return
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s: the guard could not run (exit %s; is jq installed?), so this call is refused."}}\n' Protect "$rc"
+  exit 0
+}
+trap fail_closed EXIT
 # shellcheck source=/dev/null
 source "$(dirname "$0")/../lib.sh"
 raw="$(jq -r '.tool_input.command // empty')"

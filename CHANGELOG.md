@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- The guards fail closed. Every PreToolUse hook sets `"onFailure": "block"`
+  (Claude Code 2.1.295 or later), Protect, Shell and Silence print a fixed
+  deny without `jq` when anything breaks, and every `gh` call is cut off after
+  4 seconds (`WOL_GH_TIMEOUT`), so a hung network makes the gate refuse.
 - Renamed to lumenparty (from Warriors of Light, `warriors-of-light-ai-agents`).
   The plugin is now `lumenparty`: reinstall with `/plugin install lumenparty
   --marketplace saimskywalker/lumenparty`, and plugin agents and skills are
