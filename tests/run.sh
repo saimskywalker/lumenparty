@@ -84,6 +84,28 @@ ok "slow refuses a denied command before running it" "[[ $rc == 126 && ! -e '$P/
 ok "slow runs an allowed command" "[[ -e '$P/slow-ok' ]]"
 rm -rf "$P"
 
+# Fail closed: every PreToolUse hook blocks when it fails; without jq the
+# spells still print a valid deny; a hung gh cannot hold the gate open.
+for f in hooks/hooks.json wol/install-hooks.json; do
+  ok "onFailure block in $f" "jq -e '[(.hooks // .).PreToolUse[].hooks[]] | length > 0 and all(.onFailure == \"block\")' '$SRC/$f' >/dev/null"
+done
+ok "installed hooks fail closed" "jq -e '[.hooks.PreToolUse[].hooks[]] | length > 0 and all(.onFailure == \"block\")' '$T/.claude/settings.local.json' >/dev/null"
+NJ="$(mktemp -d)"; IFS=: read -ra pdirs <<<"$PATH"
+for d in "${pdirs[@]}"; do for x in "$d"/*; do
+  n="${x##*/}"; [[ "$n" == jq || -e "$NJ/$n" || -d "$x" || ! -x "$x" ]] || ln -s "$x" "$NJ/$n"
+done; done
+nojq() { printf '%s' "$2" | PATH="$NJ" "$S/$1" 2>/dev/null | jq -r '.hookSpecificOutput.permissionDecision // "none"'; }
+ok "no jq: Protect denies" "[[ \$(nojq protect.sh '{\"tool_input\":{\"command\":\"ls\"}}') == deny ]]"
+ok "no jq: Shell denies" "[[ \$(nojq shell.sh '{\"tool_input\":{\"file_path\":\"/repo/lib/main.dart\"}}') == deny ]]"
+ok "no jq: Silence denies" "[[ \$(nojq silence.sh '{\"tool_input\":{\"sql\":\"select 1\"}}') == deny ]]"
+rm -rf "$NJ"
+FG="$(mktemp -d)"; printf '#!/bin/sh\nsleep 30\n' >"$FG/gh"; chmod +x "$FG/gh"
+t0=$(date +%s)
+hung="$(jq -n '{tool_input:{command:"gh pr merge 12 --squash"}}' | PATH="$FG:$PATH" "$S/protect.sh" | jq -r '.hookSpecificOutput.permissionDecision // "allow"')"
+took=$(( $(date +%s) - t0 ))
+ok "hung gh: the gate denies in under 20 s (${took}s)" "[[ '$hung' == deny ]] && (( took < 20 ))"
+rm -rf "$FG"
+
 # Benchmark checks: each one rejects the untouched fixture and accepts a
 # correct solution, so a score measures the task and not the checker.
 if command -v dart >/dev/null; then

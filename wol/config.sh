@@ -5,6 +5,7 @@
 WOL_OWNER=""                       # e.g. "octocat"; empty = the gate refuses every merge
 WOL_BASE="main"
 WOL_MERGE_METHOD="squash"          # squash | rebase | merge
+WOL_GH_TIMEOUT=4                   # seconds before a gh call is cut off (the gate then refuses)
 WOL_PROTECTED='main|master|develop|release/[^[:space:]:]*|production'
 
 # Reviewers whose requested review means "a human merges this one".

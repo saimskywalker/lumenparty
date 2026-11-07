@@ -86,7 +86,9 @@ git clone https://github.com/saimskywalker/lumenparty.git
 Personal by default: everything lands in `.claude/` and is hidden from git
 through `.git/info/exclude`. Remove it with `./uninstall.sh ~/code/my-app`.
 
-Needs `jq`, `git`, `perl`, and `gh` for the merge gate. macOS or Linux.
+Needs Claude Code 2.1.295 or later (for `"onFailure": "block"`, so a hook that
+cannot run blocks the call), `jq`, `git`, `perl`, and `gh` for the merge gate.
+macOS or Linux.
 
 ### The `lumenparty` command
 

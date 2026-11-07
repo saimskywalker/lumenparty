@@ -89,7 +89,9 @@ git clone https://github.com/saimskywalker/lumenparty.git
 Defaultnya pribadi: semua file masuk ke `.claude/` dan disembunyikan dari git
 lewat `.git/info/exclude`. Hapus kapan saja dengan `./uninstall.sh ~/code/my-app`.
 
-Butuh `jq`, `git`, `perl`, dan `gh` untuk merge gate. Jalan di macOS dan Linux.
+Butuh Claude Code 2.1.295 atau lebih baru (untuk `"onFailure": "block"`, supaya hook
+yang gagal jalan ikut memblokir), `jq`, `git`, `perl`, dan `gh` untuk merge gate.
+Jalan di macOS dan Linux.
 
 ### Perintah `lumenparty`
 
