@@ -1,17 +1,52 @@
 # Changelog
 
-## Unreleased
+## 0.2.1 — 2026-11-08
 
-- The guards fail closed. Every PreToolUse hook sets `"onFailure": "block"`
-  (Claude Code 2.1.295 or later), Protect, Shell and Silence print a fixed
-  deny without `jq` when anything breaks, and every `gh` call is cut off after
-  4 seconds (`WOL_GH_TIMEOUT`), so a hung network makes the gate refuse.
+A security release: Protect and Slow close the bypasses found in 0.2.0, and
+every guard fails closed. Needs Claude Code 2.1.295 or later (for
+`"onFailure": "block"`), plus `jq`, `git`, `perl` and `gh` as before.
+
+- The guards fail closed. Every PreToolUse hook sets `"onFailure": "block"`,
+  Protect, Shell and Silence print a fixed deny without `jq` when anything
+  breaks, and every `gh` call is cut off after 4 seconds (`WOL_GH_TIMEOUT`),
+  so a hung network makes the gate refuse. (#36)
+- Slow is checked too. `lumenparty slow '<command>'` no longer skips the
+  rules: Protect reads into its argument, and Slow runs Protect again before
+  it starts (exit 126 when refused). (#37)
+- A real tokenizer. Lines are split into simple commands with Perl's
+  `Text::ParseWords`, so `;`, `&`, subshells, `{ }`, `if`, `!`, quoted branch
+  names, `refs/heads/main`, `+src:dst` refspecs, an absolute git path, git's
+  `--no-pager` / `-P` / `--git-dir` and git aliases (inline, in the same line
+  or in the repository config) no longer hide a push. Pipes, here-docs and
+  here-strings into a shell, `python -c` / `perl -e` / `node -e` one-liners,
+  `find -exec` and `xargs` input are judged. (#37)
+- Merges only through the gate. Every `gh pr merge` in a line is gated;
+  `-R` / `--repo` / `GH_REPO` for another repository, `GH_HOST`, `gh api
+  graphql` merge or ref mutations and `curl` / `wget` writes to the GitHub
+  API are refused. (#37)
+- New release rules. Runner prefixes (`bundle exec`, `npx`, `pnpm dlx`,
+  `fvm`, `dart run` ...) are stripped; fastlane pilot / beta / upload_to_*,
+  `xcrun altool --upload-app`, iTMSTransporter, `shorebird release|patch`,
+  `eas update` to production, `firebase appdistribution:distribute` and
+  Gradle `publish*` tasks are releases. `fvm flutter test`, `dart test` and
+  `very_good test` without a path are full suites. (#37)
+- New secret rules. Secret paths match case-insensitively, as any word of a
+  command or a redirect, and cover `.env*` (not `.env.example`), Play Store
+  credentials and `gh/hosts.yml`. An env file handed to a build
+  (`--dart-define-from-file=.env`) stays allowed; reading it does not. (#37)
+- The built-in release and secret rules apply on top of an older project
+  `config.sh`, so existing installs get them without editing it. (#37)
+- The README says what the hooks do today, and lists what Protect still does
+  not see: script files, `source` and project tasks (`make release`,
+  `melos run release`); pipes from a non-literal source (`curl … | sh`);
+  commands built at run time inside a program; `gh` aliases; and Grep / Glob
+  tool calls on secret files. Keep GitHub branch protection on. (#34)
 - Renamed to lumenparty (from Warriors of Light, `warriors-of-light-ai-agents`).
   The plugin is now `lumenparty`: reinstall with `/plugin install lumenparty
   --marketplace saimskywalker/lumenparty`, and plugin agents and skills are
   namespaced `lumenparty:<name>`. The command is now `lumenparty`; `wol` stays
   as an alias. The summon is "Lumenparty, assemble!". Settings and state stay
-  in `.claude/wol/`.
+  in `.claude/wol/`. (#29)
 
 ## 0.2.0 — 2026-10-22
 

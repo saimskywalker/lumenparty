@@ -158,7 +158,7 @@ SUMMARY: one HIGH: server-side receipt validation is missing
 | Spell | Watches | Stops |
 |---|---|---|
 | **Protect** | every Bash tool call | local merges; pushes (force included) to `main` / `release/*`; mirror, `--all` and delete pushes; `gh api` merges; `--admin`; production tags; `firebase deploy`, `vercel --prod`, `fastlane release`, `eas submit`…; `cat` of a keystore |
-| **Shell** | Read/Edit/Write calls on matching paths (case-sensitive) | signing keys, service accounts, production env files |
+| **Shell** | Read/Edit/Write calls on matching paths (any letter case) | signing keys, service accounts, store credentials, `.env*` files |
 | **Silence** | your SQL MCP tools | anything but SELECT / WITH / EXPLAIN / SHOW; locks; sleeps; multi-statements |
 | **Mini** | every edit | files growing past 300 (a note) or 500 lines (a block sent back after the edit) |
 | **Slow** | heavy commands | parallel heavy runs; low memory; runaway jobs |
@@ -168,24 +168,31 @@ Flutter, web and fullstack.
 
 ### What Protect can and cannot see
 
-Protect judges what would really run, not just the first word: it unwraps
-`sh -c` / `bash -c` / `eval`, `$(...)` and backticks, and strips `env`,
-`nice`, `nohup`, `sudo`, `xargs`, `command`, a leading `\` and git's `-C` /
-`-c` options before applying the rules. A command held in a variable
-(`$CMD push …`) cannot be read before it runs, so a line like that is
-refused whenever it could push or merge.
+Protect judges what would really run, not just the first word. It splits a
+line into simple commands (`;`, `&&`, `||`, `|`, `&`, subshells, `{ }`,
+`if` / `while`, `!`), removes quoting, and reads into `sh -c` / `bash -c` /
+`eval`, `$(...)` and backticks, here-docs, here-strings and literal pipes
+into a shell, `python -c` / `perl -e` / `node -e` one-liners, `find -exec`
+and `lumenparty slow '…'` (Slow also runs Protect itself before it starts).
+It strips `env`, `sudo`, `nice`, `nohup`, `timeout`, `xargs`, `command`,
+runners such as `bundle exec`, `npx` and `fvm`, a leading `\`, and git's
+global options and aliases before applying the rules. A command held in a
+variable (`$CMD push …`) cannot be read before it runs, so a line like that
+is refused whenever it could push or merge.
 
 It is a guard rail for an agent, not a sandbox for an attacker: a script
 file that pushes, an alias defined in your shell profile, or a binary on
 your `PATH` is out of its sight. Keep GitHub branch protection on as well.
 
-**Known gaps until 0.2.1.** Protect does not yet catch:
+**Known gaps.** Protect still does not see:
 
-- anything run through the Slow wrapper: `lumenparty slow '<command>'` runs
-  its argument unchecked;
-- a command piped or fed into a shell (`echo '…' | sh`, `sh <<< '…'`);
-- other interpreters (`python3 -c "os.system(…)"`, `perl -e`, `node -e`);
-- merges through the API (`gh api graphql` with `mergePullRequest`, `curl -X PUT …/merge`).
+- a script file, `source` or a project task that pushes or releases
+  (`bash deploy.sh`, `make release`, `melos run release`);
+- what a pipe into a shell or an interpreter carries when it is not a
+  literal `echo` / `printf` / here-doc (`curl … | sh`, `cat x.sh | bash`);
+- a command built at run time inside a program (`perl -e` with `qw()`,
+  strings joined in a variable);
+- `gh` aliases (`gh alias set`), and Grep / Glob tool calls on secret files.
 
 ## 🔮 The Crystal Gate
 

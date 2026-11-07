@@ -23,6 +23,32 @@ while IFS='|' read -r want tool input; do
   got="$(decide "$tool" "$input")"; got="${got:-allow}"
   if [[ "$got" == "$want" ]]; then pass=$((pass + 1)); else fail=$((fail + 1)); echo "FAIL want=$want got=$got [$tool] $input"; fi
 done <"$SRC/tests/cases.txt"
+want() {
+  local got; got="$(cd "$T" && decide "$2" "$3")"; got="${got:-allow}"
+  if [[ "$got" == "$1" ]]; then pass=$((pass + 1)); else fail=$((fail + 1)); echo "FAIL want=$1 got=$got [$2] $3"; fi
+}
+# multi-line commands: here-docs and line continuations
+want deny bash $'bash <<\'EOF\'\ngit push origin main\nEOF'
+want deny bash $'cat <<\'EOF\' | sh\ngit push origin main\nEOF'
+want deny bash $'python3 - <<EOF\nimport subprocess\nsubprocess.run(["git", "push", "origin", "main"])\nEOF'
+want deny bash $'git push origin \\\nmain'
+want allow bash $'cat <<\'EOF\' > notes.md\ngit push origin main\nEOF'
+# an alias from the repository's git config
+git -C "$T" config alias.zz push; want deny bash 'git zz origin main'; git -C "$T" config --unset alias.zz
+# every gh pr merge in a line is gated, for this repository only (stub gate: #1 passes)
+G="$T/.claude/wol/crystal/gate.sh"; cp "$G" "$G.real"; printf '#!/usr/bin/env bash\n[[ "$1" == 1 ]]\n' >"$G"
+git -C "$T" remote add origin git@github.com:acme/app.git
+want allow bash 'gh pr merge 1 --squash'
+want deny bash 'gh pr merge 1 --squash && gh pr merge 2 --squash'
+want deny bash 'gh pr view 1; gh pr merge 1 --squash; gh pr merge 2 --squash'
+want allow bash 'gh pr merge 1 --squash -R acme/app'
+want allow bash 'GH_REPO=acme/app gh pr merge 1 --squash'
+want deny bash 'gh pr merge 1 --squash -R other/repo'
+want deny bash 'GH_REPO=other/repo gh pr merge 1 --squash'
+want deny bash 'GH_HOST=ghe.example.com gh pr merge 1 --squash'
+want deny bash 'cd ../other && gh pr merge 1 --squash'
+want deny bash "lumenparty slow 'gh pr merge 2 --squash'"
+mv "$G.real" "$G"; git -C "$T" remote remove origin
 
 # Mini: soft note at 301 lines, block at 501, nothing for an exempt file
 mk() { mkdir -p "$(dirname "$T/$1")"; seq 1 "$2" | sed 's/^/\/\/ line /' >"$T/$1"; jq -n --arg f "$T/$1" '{tool_input:{file_path:$f}}' | "$S/mini.sh"; }
@@ -52,6 +78,10 @@ ok "wol alias runs lumenparty" "'$SRC/bin/wol' help | grep -q 'lumenparty init'"
 ok "state lives in the project" "grep -q 'END exit=0' '$P/.claude/wol/slow.log' && [[ -f '$P/.claude/wol/.gitignore' ]]"
 ok "plugin folder stays clean" "[[ ! -e '$SRC/wol/slow.log' && ! -e '$SRC/wol/heavy.lock' ]]"
 ok "state is ignored by git" "[[ -z \$(git -C '$P' status --porcelain -uall -- .claude/wol | grep -v config.sh | grep -v thresholds.md | grep -v .gitignore) ]]"
+(cd "$P" && CLAUDE_PROJECT_DIR="$P" "$SRC/bin/lumenparty" slow 'touch slow-ran && cat android/key.properties' 2>/dev/null); rc=$?
+ok "slow refuses a denied command before running it" "[[ $rc == 126 && ! -e '$P/slow-ran' ]]"
+(cd "$P" && CLAUDE_PROJECT_DIR="$P" "$SRC/bin/lumenparty" slow 'touch slow-ok' 2>/dev/null)
+ok "slow runs an allowed command" "[[ -e '$P/slow-ok' ]]"
 rm -rf "$P"
 
 # Fail closed: every PreToolUse hook blocks when it fails; without jq the

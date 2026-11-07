@@ -162,7 +162,7 @@ SUMMARY: satu temuan HIGH: validasi receipt di server belum ada
 | Spell | Mengawasi | Mencegah |
 |---|---|---|
 | **Protect** | setiap panggilan tool Bash | merge lokal; push (termasuk force) ke `main` / `release/*`; push mirror, `--all`, atau hapus branch; merge lewat `gh api`; `--admin`; tag produksi; `firebase deploy`, `vercel --prod`, `fastlane release`, `eas submit`; membuka file keystore |
-| **Shell** | panggilan Read/Edit/Write pada path yang cocok (huruf besar-kecil dibedakan) | signing key, service account, file env produksi |
+| **Shell** | panggilan Read/Edit/Write pada path yang cocok (huruf besar-kecil tidak dibedakan) | signing key, service account, kredensial store, file `.env*` |
 | **Silence** | tool SQL lewat MCP | apa pun selain SELECT / WITH / EXPLAIN / SHOW; lock; sleep; banyak statement sekaligus |
 | **Mini** | setiap edit | file yang membesar lewat 300 baris (peringatan) atau 500 baris (blok dikirim balik setelah edit) |
 | **Slow** | perintah berat | kerja berat yang jalan barengan; RAM menipis; proses yang tidak berhenti |
@@ -172,23 +172,30 @@ Semua polanya ada di satu file, `.claude/wol/config.sh`, dengan preset untuk Flu
 ### Apa yang bisa dan tidak bisa dilihat Protect
 
 Protect menilai perintah yang benar-benar akan dijalankan, bukan hanya kata
-pertamanya. Ia membuka `sh -c` / `bash -c` / `eval`, `$(...)` dan backtick,
-serta membuang awalan `env`, `nice`, `nohup`, `sudo`, `xargs`, `command`,
-garis miring terbalik di depan, dan opsi git `-C` / `-c`. Perintah yang
-disimpan di variabel (`$CMD push …`) tidak bisa dibaca sebelum dijalankan,
-jadi baris seperti itu ditolak kalau bisa melakukan push atau merge.
+pertamanya. Ia memecah baris menjadi perintah-perintah sederhana (`;`, `&&`,
+`||`, `|`, `&`, subshell, `{ }`, `if` / `while`, `!`), membuang tanda kutip,
+dan membuka `sh -c` / `bash -c` / `eval`, `$(...)` dan backtick, here-doc,
+here-string, pipe literal ke shell, one-liner `python -c` / `perl -e` /
+`node -e`, `find -exec`, serta `lumenparty slow '…'` (Slow juga menjalankan
+Protect sendiri sebelum mulai). Ia membuang awalan `env`, `sudo`, `nice`,
+`nohup`, `timeout`, `xargs`, `command`, runner seperti `bundle exec`, `npx`,
+dan `fvm`, garis miring terbalik di depan, serta opsi global dan alias git.
+Perintah yang disimpan di variabel (`$CMD push …`) tidak bisa dibaca sebelum
+dijalankan, jadi baris seperti itu ditolak kalau bisa melakukan push atau merge.
 
 Ini pagar pengaman untuk agent, bukan sandbox untuk menahan penyerang. Script
 terpisah yang melakukan push, alias di profil shell-mu, atau program di
 `PATH`-mu ada di luar jangkauannya. Tetap aktifkan branch protection di GitHub.
 
-**Celah yang diketahui sampai 0.2.1.** Protect belum menangkap:
+**Celah yang diketahui.** Protect masih belum melihat:
 
-- apa pun yang dijalankan lewat Slow: `lumenparty slow '<perintah>'`
-  menjalankan argumennya tanpa dicek;
-- perintah yang di-pipe atau dikirim ke shell (`echo '…' | sh`, `sh <<< '…'`);
-- interpreter lain (`python3 -c "os.system(…)"`, `perl -e`, `node -e`);
-- merge lewat API (`gh api graphql` dengan `mergePullRequest`, `curl -X PUT …/merge`).
+- file script, `source`, atau task proyek yang melakukan push atau rilis
+  (`bash deploy.sh`, `make release`, `melos run release`);
+- isi pipe ke shell atau interpreter yang bukan `echo` / `printf` / here-doc
+  literal (`curl … | sh`, `cat x.sh | bash`);
+- perintah yang dirakit saat program berjalan (`perl -e` dengan `qw()`,
+  string yang digabung di variabel);
+- alias `gh` (`gh alias set`), serta panggilan tool Grep / Glob ke file rahasia.
 
 ## 🔮 Crystal Gate
 
