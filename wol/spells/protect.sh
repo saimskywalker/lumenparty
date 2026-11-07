@@ -47,14 +47,18 @@ if grep -Eqi '\b(push|merge)\b' <<<"$raw"; then
 fi
 
 # 1. secrets: no word of a command (pattern of a grep, text of an echo and
-#    multi-word messages aside) and no redirect may name a secret file
+#    multi-word messages and wrapped commands aside, which are judged on
+#    their own lines) and no redirect may name a secret file. An
+#    env file handed to a build as --dart-define-from-file (or another
+#    --*define-from-file flag) is allowed: the build reads it, not the agent.
+envfile='(^|/)\.env($|\.)'
 secret="${WOL_SECRET_FILES:-}"; secret="${secret:+$secret|}${WOL_SECRET_ALWAYS}"
 cands=""
 while IFS= read -r l; do
   [[ -z "$l" ]] && continue
   read -ra w <<<"$l"
-  c0="${w[0]}"; pat=0; exempt=0; msg=0; skipnext=0; candnext=0
-  case "$c0" in grep|egrep|fgrep|rg|ag|ack) pat=1 ;; echo|printf|ls|test|'['|'[[') exempt=1 ;; git|gh) msg=1 ;; esac
+  c0="${w[0]}"; pat=0; exempt=0; msg=0; skipnext=0; candnext=0; envarg=0
+  case "$c0" in grep|egrep|fgrep|rg|ag|ack) pat=1 ;; echo|printf|ls|test|'['|'[[') exempt=1 ;; git|gh|lumenparty|wol|slow.sh|sh|bash|zsh|dash|ksh|eval|watch) msg=1 ;; esac
   [[ "$c0" == git && "${w[1]:-}" == grep ]] && pat=1
   for ((k = 1; k < ${#w[@]}; k++)); do
     a="${w[k]}"
@@ -71,6 +75,11 @@ while IFS= read -r l; do
         *) pat=0; continue ;;
       esac
     fi
+    if (( envarg )); then envarg=0; [[ "$a" =~ $envfile ]] && continue; fi
+    case "$a" in
+      --*define-from-file) envarg=1; continue ;;
+      --*define-from-file=*) [[ "${a#*=}" =~ $envfile ]] && continue ;;
+    esac
     (( msg )) && [[ "$a" == *"$X"* ]] && continue
     cands+="$a"$'\n'
   done

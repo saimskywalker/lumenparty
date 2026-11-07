@@ -24,7 +24,8 @@
   `shorebird release|patch`, `eas update` to production,
   `firebase appdistribution:distribute` and Gradle `publish*` tasks are
   releases. Secret paths match case-insensitively and cover `.env*` (not
-  `.env.example`), Play Store credentials and `gh/hosts.yml`; `fvm flutter
+  `.env.example`), Play Store credentials and `gh/hosts.yml`, while an env
+  file handed to a build (`--dart-define-from-file=.env`) stays allowed; `fvm flutter
   test`, `dart test` and `very_good test` without a path are full suites.
   The built-in release and secret rules apply on top of an older
   `config.sh`.

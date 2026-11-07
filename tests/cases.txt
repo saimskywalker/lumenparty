@@ -207,3 +207,14 @@ allow|bash|lumenparty slow 'fvm flutter test test/a_test.dart'
 deny|bash|echo main | xargs git push origin
 deny|bash|xargs -I{} git push origin {} <<< main
 deny|bash|git config alias.pp push && git pp origin main
+# an env file handed to a build is allowed; reading it is not
+allow|bash|flutter run --dart-define-from-file=.env
+allow|bash|flutter run --dart-define-from-file .env.local
+allow|bash|lumenparty slow 'flutter build apk --dart-define-from-file=.env.prod'
+allow|bash|lumenparty slow 'flutter test test/a_test.dart --dart-define-from-file=.env'
+allow|bash|dart run bin/main.dart --define-from-file=.env.local
+deny|bash|flutter run --dart-define-from-file=android/key.properties
+deny|bash|flutter run --dart-define-from-file .env && cat .env
+deny|bash|grep API_KEY .env
+deny|bash|awk 1 .env.prod
+deny|bash|sed -n p .env.local
