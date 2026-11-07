@@ -29,11 +29,15 @@ WOL_FULL_SUITE_BLOCK=1             # 1 = `flutter test` must name test files
 # Example: 'cargo[[:space:]]+(build|test|clippy)'. Override: touch .claude/wol/allow-local
 WOL_BLOCK_LOCAL=""
 
-# Production: tags that deploy, and commands that ship.
+# Production: tags that deploy, and commands that ship. Built-in store and
+# release rules (fastlane, xcrun altool, eas, shorebird, Gradle publish...)
+# always apply on top of this list; see WOL_RELEASE_ALWAYS in lib.sh.
 WOL_PROD_TAG='v[0-9]+\.[0-9]+\.[0-9]+'
 WOL_DEPLOY_BLOCK='firebase[[:space:]]+deploy|vercel[[:space:]].*--prod|netlify[[:space:]]+deploy[[:space:]].*--prod|fastlane[[:space:]].*(release|deploy|appstore|playstore|supply|deliver)|eas[[:space:]]+submit|eas[[:space:]]+build[[:space:]].*production|supabase[[:space:]]+db[[:space:]]+push|kubectl[[:space:]].*prod.*[[:space:]](apply|delete|set|rollout|patch|scale)|terraform[[:space:]]+apply'
 
-# Shell: files the crew never opens or prints.
+# Shell: files the crew never opens or prints, matched case-insensitively.
+# Built-in patterns (.env*, signing keys, store credentials...) always apply;
+# see WOL_SECRET_ALWAYS in lib.sh.
 WOL_SECRET_FILES='\.jks$|\.keystore$|\.p8$|\.p12$|\.pem$|key\.properties$|service[-_]?account[^/]*\.json$|\.env\.production$|\.env\.prod$|secrets\.(tfvars|ya?ml|json)$|AuthKey_[^/]*$|id_(rsa|ed25519)$'
 
 # Silence: MCP tools that run SQL (read-only enforcement). Regex on tool name.

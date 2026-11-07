@@ -80,3 +80,130 @@ allow|bash|GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash origin/main
 allow|bash|bash -c "git status"
 allow|bash|echo $(date)
 allow|bash|x=$(git rev-parse HEAD) && echo $x
+# the Slow queue is judged too (0.2.1)
+deny|bash|lumenparty slow 'git push origin main'
+deny|bash|lumenparty slow 'gh pr merge 12 --squash'
+deny|bash|lumenparty slow 'fastlane android deploy'
+deny|bash|lumenparty slow './gradlew publishReleaseBundle'
+deny|bash|lumenparty slow 'flutter test'
+deny|bash|wol slow 'git push origin main'
+deny|bash|.claude/wol/bin/lumenparty slow 'cat android/key.properties'
+deny|bash|bash .claude/wol/spells/slow.sh 'git push origin main'
+allow|bash|lumenparty slow 'flutter test test/a_test.dart'
+allow|bash|wol slow 'dart test test/a_test.dart'
+# push forms (0.2.1)
+deny|bash|git push origin HEAD:refs/heads/main
+deny|bash|git push origin +HEAD:refs/heads/main
+deny|bash|git push origin refs/heads/main
+deny|bash|git push origin feature/login:main
+deny|bash|git push origin "main"
+deny|bash|git push origin 'main'
+deny|bash|git push origin ma""in
+deny|bash|/usr/bin/git push origin main
+deny|bash|git push origin 'refs/heads/*:refs/heads/*'
+deny|bash|git push --prune origin
+deny|bash|git push origin $BRANCH
+deny|bash|true & git push origin main
+deny|bash|(git push origin main)
+deny|bash|{ git push origin main; }
+deny|bash|if true; then git push origin main; fi
+deny|bash|! git push origin main
+deny|bash|git --no-pager push origin main
+deny|bash|git -P push origin main
+deny|bash|git --git-dir .git push origin main
+deny|bash|git -c alias.p=push p origin main
+deny|bash|git -c 'alias.p=!git push origin main' p
+deny|bash|git-push origin main
+allow|bash|git push origin feature-x
+allow|bash|git push origin HEAD:refs/heads/feature-x
+allow|bash|git push origin main-feature
+allow|bash|git -c alias.p=push p origin feature-x
+allow|bash|git --no-pager log --oneline -3
+allow|bash|git merge-base HEAD origin/main
+# commands fed to a shell or an interpreter (0.2.1)
+deny|bash|echo 'git push origin main' | sh
+deny|bash|printf '%s\n' 'git push origin main' | bash -s
+deny|bash|sh <<< 'git push origin main'
+deny|bash|python3 -c "import os; os.system('git push origin main')"
+deny|bash|python3 -c "import subprocess; subprocess.run(['git', 'push', 'origin', 'main'])"
+deny|bash|perl -e 'system("git", "push", "origin", "main")'
+deny|bash|node -e 'require("child_process").execSync("git push origin main")'
+deny|bash|bash -c "git push origin \"main\""
+deny|bash|bash -c "$(printf 'git push origin main')"
+deny|bash|find . -maxdepth 0 -exec git push origin main \;
+deny|bash|env -S 'git push origin main'
+deny|bash|timeout 60 git push origin main
+allow|bash|python3 -c "print(1 + 1)"
+allow|bash|echo 'git push origin main' > notes.txt
+allow|bash|printf 'hello\n' | sh
+# merges and ref writes outside the gate (0.2.1)
+deny|bash|gh api graphql -f query='mutation { mergePullRequest(input: {pullRequestId: "X"}) { clientMutationId } }'
+deny|bash|gh api graphql -f query='mutation { enablePullRequestAutoMerge(input: {pullRequestId: "X"}) { clientMutationId } }'
+deny|bash|gh api graphql -F query=@merge.graphql
+deny|bash|gh api --method=PUT repos/acme/app/contents/x
+deny|bash|curl -X PUT -H "Authorization: token x" https://api.github.com/repos/acme/app/pulls/12/merge
+deny|bash|curl -s https://api.github.com/repos/acme/app/git/refs/heads/main -X PATCH -d '{"sha":"abc"}'
+deny|bash|wget --method=PUT https://api.github.com/repos/acme/app/pulls/12/merge
+deny|bash|gh pr merge 12 -R other/repo --squash
+deny|bash|gh pr merge 12 --repo=other/repo --squash
+deny|bash|GH_REPO=other/repo gh pr merge 12 --squash
+deny|bash|export GH_REPO=other/repo; gh pr merge 12 --squash
+deny|bash|gh pr merge 12 -sd
+deny|bash|gh pr merge https://github.com/acme/app/pull/12
+allow|bash|gh api graphql -f query='query { viewer { login } }'
+allow|bash|curl -s https://api.github.com/repos/acme/app/pulls/12
+allow|bash|curl -X POST -d '{}' https://example.com/hook
+# releases and store uploads (0.2.1)
+deny|bash|bundle exec fastlane android deploy
+deny|bash|fastlane pilot upload
+deny|bash|fastlane ios beta
+deny|bash|fastlane run upload_to_testflight
+deny|bash|fastlane run upload_to_play_store
+deny|bash|xcrun altool --upload-app -f app.ipa -t ios
+deny|bash|xcrun iTMSTransporter -m upload
+deny|bash|shorebird release android
+deny|bash|shorebird patch ios
+deny|bash|npx eas submit -p ios
+deny|bash|pnpm dlx eas-cli@latest submit
+deny|bash|eas update --branch production --message fix
+deny|bash|firebase appdistribution:distribute app.apk --app 1:2:android:3
+deny|bash|gradle publishBundle
+deny|bash|./gradlew :app:publishReleaseBundle
+deny|bash|env CI=1 fastlane ios release
+allow|bash|fastlane test
+allow|bash|bundle exec fastlane test
+allow|bash|eas update --branch preview --message fix
+allow|bash|shorebird preview
+# secrets (0.2.1)
+deny|bash|grep storePassword android/key.properties
+deny|bash|dd if=android/key.properties
+deny|bash|perl -ne print android/key.properties
+deny|bash|awk 1 android/key.properties
+deny|bash|sed -n p android/key.properties
+deny|bash|while read l; do echo "$l"; done < android/key.properties
+deny|bash|cat android/Key.Properties
+deny|bash|cp android/app/UPLOAD.JKS /tmp/x
+deny|bash|cat .env
+deny|bash|cat .env.local
+deny|bash|cat fastlane/play-store-credentials.json
+deny|bash|cat ~/.config/gh/hosts.yml
+deny|bash|grep -f android/key.properties README.md
+allow|bash|cat .env.example
+allow|bash|grep -n key.properties .gitignore
+allow|bash|echo android/key.properties >> .gitignore
+allow|bash|git commit -m "stop tracking key.properties"
+deny|read|/repo/android/Key.Properties
+deny|read|/repo/android/app/UPLOAD.JKS
+deny|read|/repo/.env
+deny|read|/repo/.env.local
+deny|read|/repo/fastlane/play-store-credentials.json
+deny|read|/home/u/.config/gh/hosts.yml
+allow|read|/repo/.env.example
+# full test suites through a version manager (0.2.1)
+deny|bash|fvm flutter test
+deny|bash|dart test
+deny|bash|very_good test
+allow|bash|lumenparty slow 'fvm flutter test test/a_test.dart'
+deny|bash|echo main | xargs git push origin
+deny|bash|xargs -I{} git push origin {} <<< main
+deny|bash|git config alias.pp push && git pp origin main

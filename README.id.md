@@ -170,11 +170,16 @@ Semua polanya ada di satu file, `.claude/wol/config.sh`, dengan preset untuk Flu
 ### Apa yang bisa dan tidak bisa dilihat Protect
 
 Protect menilai perintah yang benar-benar akan dijalankan, bukan hanya kata
-pertamanya. Ia membuka `sh -c` / `bash -c` / `eval`, `$(...)` dan backtick,
-serta membuang awalan `env`, `nice`, `nohup`, `sudo`, `xargs`, `command`,
-garis miring terbalik di depan, dan opsi git `-C` / `-c`. Perintah yang
-disimpan di variabel (`$CMD push …`) tidak bisa dibaca sebelum dijalankan,
-jadi baris seperti itu ditolak kalau bisa melakukan push atau merge.
+pertamanya. Ia memecah baris menjadi perintah-perintah sederhana (`;`, `&&`,
+`||`, `|`, `&`, subshell, `{ }`, `if` / `while`, `!`), membuang tanda kutip,
+dan membuka `sh -c` / `bash -c` / `eval`, `$(...)` dan backtick, here-doc,
+here-string, pipe literal ke shell, one-liner `python -c` / `perl -e` /
+`node -e`, `find -exec`, serta `lumenparty slow '…'` (Slow juga menjalankan
+Protect sendiri sebelum mulai). Ia membuang awalan `env`, `sudo`, `nice`,
+`nohup`, `timeout`, `xargs`, `command`, runner seperti `bundle exec`, `npx`,
+dan `fvm`, garis miring terbalik di depan, serta opsi global dan alias git.
+Perintah yang disimpan di variabel (`$CMD push …`) tidak bisa dibaca sebelum
+dijalankan, jadi baris seperti itu ditolak kalau bisa melakukan push atau merge.
 
 Ini pagar pengaman untuk agent, bukan sandbox untuk menahan penyerang. Script
 terpisah yang melakukan push, alias di profil shell-mu, atau program di

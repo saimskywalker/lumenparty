@@ -166,12 +166,17 @@ Flutter, web and fullstack.
 
 ### What Protect can and cannot see
 
-Protect judges what would really run, not just the first word: it unwraps
-`sh -c` / `bash -c` / `eval`, `$(...)` and backticks, and strips `env`,
-`nice`, `nohup`, `sudo`, `xargs`, `command`, a leading `\` and git's `-C` /
-`-c` options before applying the rules. A command held in a variable
-(`$CMD push …`) cannot be read before it runs, so a line like that is
-refused whenever it could push or merge.
+Protect judges what would really run, not just the first word. It splits a
+line into simple commands (`;`, `&&`, `||`, `|`, `&`, subshells, `{ }`,
+`if` / `while`, `!`), removes quoting, and reads into `sh -c` / `bash -c` /
+`eval`, `$(...)` and backticks, here-docs, here-strings and literal pipes
+into a shell, `python -c` / `perl -e` / `node -e` one-liners, `find -exec`
+and `lumenparty slow '…'` (Slow also runs Protect itself before it starts).
+It strips `env`, `sudo`, `nice`, `nohup`, `timeout`, `xargs`, `command`,
+runners such as `bundle exec`, `npx` and `fvm`, a leading `\`, and git's
+global options and aliases before applying the rules. A command held in a
+variable (`$CMD push …`) cannot be read before it runs, so a line like that
+is refused whenever it could push or merge.
 
 It is a guard rail for an agent, not a sandbox for an attacker: a script
 file that pushes, an alias defined in your shell profile, or a binary on
