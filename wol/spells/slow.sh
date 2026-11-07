@@ -3,7 +3,8 @@
 #
 #   .claude/wol/spells/slow.sh 'flutter test test/login_test.dart'
 #
-# Waits for the shared lock (stale locks reclaimed), waits out low memory,
+# Runs Protect on the command first (exit 126 when refused), then waits
+# for the shared lock (stale locks reclaimed), waits out low memory,
 # runs at nice 10, stops the whole process group after WOL_TIMEOUT, and
 # logs start, end, exit code, duration and the lowest free memory.
 set -uo pipefail
@@ -13,6 +14,17 @@ ROOT="$PROJECT"
 wol_state; LOCK="$STATE/heavy.lock"; LOG="$STATE/slow.log"
 [[ $# -ge 1 ]] || { echo "usage: slow.sh '<command>'" >&2; exit 2; }
 cmd="$*"
+
+# The queue is not a way around Protect: judge the command before it runs
+# (heavy is fine here, everything else is checked as if typed directly).
+refuse() { echo "Slow: refused, not running it. $1" >&2; exit 126; }
+verdict="$(jq -n --arg c "$cmd" '{tool_input:{command:$c}}' | WOL_QUEUED=1 "$WOL/spells/protect.sh")" \
+  || refuse "Protect could not check the command."
+if [[ -n "$verdict" ]]; then
+  decision="$(jq -r '.hookSpecificOutput.permissionDecision // "allow"' <<<"$verdict" 2>/dev/null)" \
+    || refuse "Protect gave an unreadable answer."
+  [[ "$decision" == deny ]] && refuse "$(jq -r '.hookSpecificOutput.permissionDecisionReason // ""' <<<"$verdict")"
+fi
 
 mem() {
   if [[ "$(uname)" == Darwin ]]; then sysctl -n kern.memorystatus_level 2>/dev/null || echo 100

@@ -12,6 +12,27 @@
   namespaced `lumenparty:<name>`. The command is now `lumenparty`; `wol` stays
   as an alias. The summon is "Lumenparty, assemble!". Settings and state stay
   in `.claude/wol/`.
+- Protect closes the 0.2.0 bypasses. `lumenparty slow '<command>'` no longer
+  skips the rules: Protect reads into its argument, and Slow runs Protect
+  again before it starts (exit 126 when refused). Lines are split into simple
+  commands with Perl's `Text::ParseWords`, so `;`, `&`, subshells, `{ }`,
+  `if`, `!`, quoted branch names, `refs/heads/main`, `+src:dst` refspecs, an
+  absolute git path, git's `--no-pager` / `-P` / `--git-dir` and inline
+  aliases no longer hide a push. Pipes, here-docs and here-strings into a
+  shell and `python -c` / `perl -e` / `node -e` one-liners are judged. Every
+  `gh pr merge` in a line is gated, and `-R` / `--repo` / `GH_REPO` for
+  another repository, `gh api graphql` merge or ref mutations and `curl` /
+  `wget` writes to the GitHub API are refused. Runner prefixes (`bundle exec`,
+  `npx`, `pnpm dlx`, `fvm`, `dart run` ...) are stripped; fastlane pilot /
+  beta / upload_to_*, `xcrun altool --upload-app`, iTMSTransporter,
+  `shorebird release|patch`, `eas update` to production,
+  `firebase appdistribution:distribute` and Gradle `publish*` tasks are
+  releases. Secret paths match case-insensitively and cover `.env*` (not
+  `.env.example`), Play Store credentials and `gh/hosts.yml`, while an env
+  file handed to a build (`--dart-define-from-file=.env`) stays allowed; `fvm flutter
+  test`, `dart test` and `very_good test` without a path are full suites.
+  The built-in release and secret rules apply on top of an older
+  `config.sh`.
 
 ## 0.2.0 — 2026-10-22
 
