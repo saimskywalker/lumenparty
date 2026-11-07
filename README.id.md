@@ -11,6 +11,8 @@
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/built%20for-Claude%20Code-d97757)](https://docs.anthropic.com/en/docs/claude-code)
 
+**Status:** dipelihara. Perbaikan keamanan didahulukan; perubahan lain berjalan lebih lambat.
+
 > 「仲間たちよ、クリスタルが汝らを選んだ。集え——このコードに調和を取り戻すために。」
 > *"Wahai party, kristal telah memilih kalian. Berkumpullah, dan kembalikan keteraturan ke kode ini."*
 
