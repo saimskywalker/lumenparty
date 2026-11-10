@@ -1,7 +1,7 @@
 {
   "name": "lumenparty",
   "displayName": "lumenparty",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A crew for Flutter, mobile and web apps: 16 subagents, 14 skills, zero-token guard hooks (Protect, Shell, Silence, Mini) and a merge gate that opens only on green CI, no conflict and PASS verdicts.",
   "author": { "name": "saimskywalker", "url": "https://github.com/saimskywalker" },
   "homepage": "https://github.com/saimskywalker/lumenparty",

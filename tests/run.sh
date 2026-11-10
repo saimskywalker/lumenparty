@@ -23,6 +23,32 @@ while IFS='|' read -r want tool input; do
   got="$(decide "$tool" "$input")"; got="${got:-allow}"
   if [[ "$got" == "$want" ]]; then pass=$((pass + 1)); else fail=$((fail + 1)); echo "FAIL want=$want got=$got [$tool] $input"; fi
 done <"$SRC/tests/cases.txt"
+want() {
+  local got; got="$(cd "$T" && decide "$2" "$3")"; got="${got:-allow}"
+  if [[ "$got" == "$1" ]]; then pass=$((pass + 1)); else fail=$((fail + 1)); echo "FAIL want=$1 got=$got [$2] $3"; fi
+}
+# multi-line commands: here-docs and line continuations
+want deny bash $'bash <<\'EOF\'\ngit push origin main\nEOF'
+want deny bash $'cat <<\'EOF\' | sh\ngit push origin main\nEOF'
+want deny bash $'python3 - <<EOF\nimport subprocess\nsubprocess.run(["git", "push", "origin", "main"])\nEOF'
+want deny bash $'git push origin \\\nmain'
+want allow bash $'cat <<\'EOF\' > notes.md\ngit push origin main\nEOF'
+# an alias from the repository's git config
+git -C "$T" config alias.zz push; want deny bash 'git zz origin main'; git -C "$T" config --unset alias.zz
+# every gh pr merge in a line is gated, for this repository only (stub gate: #1 passes)
+G="$T/.claude/wol/crystal/gate.sh"; cp "$G" "$G.real"; printf '#!/usr/bin/env bash\n[[ "$1" == 1 ]]\n' >"$G"
+git -C "$T" remote add origin git@github.com:acme/app.git
+want allow bash 'gh pr merge 1 --squash'
+want deny bash 'gh pr merge 1 --squash && gh pr merge 2 --squash'
+want deny bash 'gh pr view 1; gh pr merge 1 --squash; gh pr merge 2 --squash'
+want allow bash 'gh pr merge 1 --squash -R acme/app'
+want allow bash 'GH_REPO=acme/app gh pr merge 1 --squash'
+want deny bash 'gh pr merge 1 --squash -R other/repo'
+want deny bash 'GH_REPO=other/repo gh pr merge 1 --squash'
+want deny bash 'GH_HOST=ghe.example.com gh pr merge 1 --squash'
+want deny bash 'cd ../other && gh pr merge 1 --squash'
+want deny bash "lumenparty slow 'gh pr merge 2 --squash'"
+mv "$G.real" "$G"; git -C "$T" remote remove origin
 
 # Mini: soft note at 301 lines, block at 501, nothing for an exempt file
 mk() { mkdir -p "$(dirname "$T/$1")"; seq 1 "$2" | sed 's/^/\/\/ line /' >"$T/$1"; jq -n --arg f "$T/$1" '{tool_input:{file_path:$f}}' | "$S/mini.sh"; }
@@ -52,6 +78,10 @@ ok "wol alias runs lumenparty" "'$SRC/bin/wol' help | grep -q 'lumenparty init'"
 ok "state lives in the project" "grep -q 'END exit=0' '$P/.claude/wol/slow.log' && [[ -f '$P/.claude/wol/.gitignore' ]]"
 ok "plugin folder stays clean" "[[ ! -e '$SRC/wol/slow.log' && ! -e '$SRC/wol/heavy.lock' ]]"
 ok "state is ignored by git" "[[ -z \$(git -C '$P' status --porcelain -uall -- .claude/wol | grep -v config.sh | grep -v thresholds.md | grep -v .gitignore) ]]"
+(cd "$P" && CLAUDE_PROJECT_DIR="$P" "$SRC/bin/lumenparty" slow 'touch slow-ran && cat android/key.properties' 2>/dev/null); rc=$?
+ok "slow refuses a denied command before running it" "[[ $rc == 126 && ! -e '$P/slow-ran' ]]"
+(cd "$P" && CLAUDE_PROJECT_DIR="$P" "$SRC/bin/lumenparty" slow 'touch slow-ok' 2>/dev/null)
+ok "slow runs an allowed command" "[[ -e '$P/slow-ok' ]]"
 rm -rf "$P"
 
 # Models: profiles and per-hero overrides rewrite the installed heroes,
@@ -75,6 +105,27 @@ ok "an unknown profile is refused" "! M profile turbo 2>/dev/null"
 M set cloud default >/dev/null; M profile balanced >/dev/null
 ok "default drops the override" "[[ \$(mod cloud) == sonnet && \$(mod squall) == opus ]] && grep -q '^WOL_MODELS=\"\"' '$T/.claude/wol/config.sh'"
 ok "the list shows every hero" "[[ \$(M | grep -cE '^(bartz|squall|zidane) ') == 3 ]]"
+# Fail closed: every PreToolUse hook blocks when it fails; without jq the
+# spells still print a valid deny; a hung gh cannot hold the gate open.
+for f in hooks/hooks.json wol/install-hooks.json; do
+  ok "onFailure block in $f" "jq -e '[(.hooks // .).PreToolUse[].hooks[]] | length > 0 and all(.onFailure == \"block\")' '$SRC/$f' >/dev/null"
+done
+ok "installed hooks fail closed" "jq -e '[.hooks.PreToolUse[].hooks[]] | length > 0 and all(.onFailure == \"block\")' '$T/.claude/settings.local.json' >/dev/null"
+NJ="$(mktemp -d)"; IFS=: read -ra pdirs <<<"$PATH"
+for d in "${pdirs[@]}"; do for x in "$d"/*; do
+  n="${x##*/}"; [[ "$n" == jq || -e "$NJ/$n" || -d "$x" || ! -x "$x" ]] || ln -s "$x" "$NJ/$n"
+done; done
+nojq() { printf '%s' "$2" | PATH="$NJ" "$S/$1" 2>/dev/null | jq -r '.hookSpecificOutput.permissionDecision // "none"'; }
+ok "no jq: Protect denies" "[[ \$(nojq protect.sh '{\"tool_input\":{\"command\":\"ls\"}}') == deny ]]"
+ok "no jq: Shell denies" "[[ \$(nojq shell.sh '{\"tool_input\":{\"file_path\":\"/repo/lib/main.dart\"}}') == deny ]]"
+ok "no jq: Silence denies" "[[ \$(nojq silence.sh '{\"tool_input\":{\"sql\":\"select 1\"}}') == deny ]]"
+rm -rf "$NJ"
+FG="$(mktemp -d)"; printf '#!/bin/sh\nsleep 30\n' >"$FG/gh"; chmod +x "$FG/gh"
+t0=$(date +%s)
+hung="$(jq -n '{tool_input:{command:"gh pr merge 12 --squash"}}' | PATH="$FG:$PATH" "$S/protect.sh" | jq -r '.hookSpecificOutput.permissionDecision // "allow"')"
+took=$(( $(date +%s) - t0 ))
+ok "hung gh: the gate denies in under 20 s (${took}s)" "[[ '$hung' == deny ]] && (( took < 20 ))"
+rm -rf "$FG"
 
 # Benchmark checks: each one rejects the untouched fixture and accepts a
 # correct solution, so a score measures the task and not the checker.

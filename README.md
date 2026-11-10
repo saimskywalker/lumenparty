@@ -5,11 +5,13 @@
 **English** · [Bahasa Indonesia](README.id.md)
 
 **AI agents for Claude Code, built for Flutter, mobile and web apps.**
-16 heroes. 14 skills. 5 spells that cost zero tokens. One gate no merge gets past.
+16 heroes. 14 skills. 5 spells that cost zero tokens. A gate for `gh pr merge <N>`.
 
 [![ci](https://github.com/saimskywalker/lumenparty/actions/workflows/ci.yml/badge.svg)](https://github.com/saimskywalker/lumenparty/actions/workflows/ci.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/built%20for-Claude%20Code-d97757)](https://docs.anthropic.com/en/docs/claude-code)
+
+**Status:** maintained. Security fixes come first; other changes move more slowly.
 
 > 「仲間たちよ、クリスタルが汝らを選んだ。集え——このコードに調和を取り戻すために。」
 > *"Party, the crystals have chosen you. Gather, and restore harmony to this code."*
@@ -42,9 +44,9 @@ lumenparty answers each one with something that cannot forget:
 |---|---|
 | Too much code | **Auron**'s laziness ladder (reuse → stdlib → platform → minimal), and the **Mini** spell: soft 300, hard 500 lines per file |
 | Token burn | **Cosmos** works alone first; heroes only for parallel work, wide reads or reviews. Haiku gathers, Sonnet builds, Opus judges |
-| A frozen laptop | the **Slow** spell: one heavy job at a time, low priority, waits out low memory, time-limited |
-| Dangerous merges | the **Protect** spell closes every road to protected branches; the **Crystal Gate** merges only when CI is green, there is no conflict, and the reviewers said PASS |
-| Forgotten rules | hooks, not prompts: they run on every tool call, for every agent, every time |
+| A frozen laptop | the **Slow** spell: one heavy job at a time, low priority, waits up to 5 minutes for free memory, time-limited |
+| Dangerous merges | the **Protect** spell blocks common push and merge forms; keep GitHub branch protection on; the **Crystal Gate** merges only when CI is green, there is no conflict, and the reviewers said PASS |
+| Forgotten rules | hooks, not prompts: they run on Bash, Read, Edit and Write calls, for every agent; without `jq` they do not block |
 
 ## Summon them in 60 seconds
 
@@ -84,7 +86,9 @@ git clone https://github.com/saimskywalker/lumenparty.git
 Personal by default: everything lands in `.claude/` and is hidden from git
 through `.git/info/exclude`. Remove it with `./uninstall.sh ~/code/my-app`.
 
-Needs `jq`, `git`, `perl`, and `gh` for the merge gate. macOS or Linux.
+Needs Claude Code 2.1.295 or later (for `"onFailure": "block"`, so a hook that
+cannot run blocks the call), `jq`, `git`, `perl`, and `gh` for the merge gate.
+macOS or Linux.
 
 ### The `lumenparty` command
 
@@ -183,10 +187,10 @@ model with `"env": {"CLAUDE_CODE_SUBAGENT_MODEL": "sonnet",
 
 | Spell | Watches | Stops |
 |---|---|---|
-| **Protect** | every shell command | local merges; pushes to `main` / `release/*`; force, mirror and delete pushes; `gh api` merges; `--admin`; production tags; `firebase deploy`, `vercel --prod`, `fastlane release`, `eas submit`…; `cat` of a keystore |
-| **Shell** | every file read and edit | signing keys, service accounts, production env files |
+| **Protect** | every Bash tool call | local merges; pushes (force included) to `main` / `release/*`; mirror, `--all` and delete pushes; `gh api` merges; `--admin`; production tags; `firebase deploy`, `vercel --prod`, `fastlane release`, `eas submit`…; `cat` of a keystore |
+| **Shell** | Read/Edit/Write calls on matching paths (any letter case) | signing keys, service accounts, store credentials, `.env*` files |
 | **Silence** | your SQL MCP tools | anything but SELECT / WITH / EXPLAIN / SHOW; locks; sleeps; multi-statements |
-| **Mini** | every edit | files growing past 300 (a note) or 500 lines (a block) |
+| **Mini** | every edit | files growing past 300 (a note) or 500 lines (a block sent back after the edit) |
 | **Slow** | heavy commands | parallel heavy runs; low memory; runaway jobs |
 
 All patterns live in one file, `.claude/wol/config.sh`, with presets for
@@ -194,23 +198,38 @@ Flutter, web and fullstack.
 
 ### What Protect can and cannot see
 
-Protect judges what would really run, not just the first word: it unwraps
-`sh -c` / `bash -c` / `eval`, `$(...)` and backticks, and strips `env`,
-`nice`, `nohup`, `sudo`, `xargs`, `command`, a leading `\` and git's `-C` /
-`-c` options before applying the rules. A command held in a variable
-(`$CMD push …`) cannot be read before it runs, so a line like that is
-refused whenever it could push or merge.
+Protect judges what would really run, not just the first word. It splits a
+line into simple commands (`;`, `&&`, `||`, `|`, `&`, subshells, `{ }`,
+`if` / `while`, `!`), removes quoting, and reads into `sh -c` / `bash -c` /
+`eval`, `$(...)` and backticks, here-docs, here-strings and literal pipes
+into a shell, `python -c` / `perl -e` / `node -e` one-liners, `find -exec`
+and `lumenparty slow '…'` (Slow also runs Protect itself before it starts).
+It strips `env`, `sudo`, `nice`, `nohup`, `timeout`, `xargs`, `command`,
+runners such as `bundle exec`, `npx` and `fvm`, a leading `\`, and git's
+global options and aliases before applying the rules. A command held in a
+variable (`$CMD push …`) cannot be read before it runs, so a line like that
+is refused whenever it could push or merge.
 
 It is a guard rail for an agent, not a sandbox for an attacker: a script
 file that pushes, an alias defined in your shell profile, or a binary on
 your `PATH` is out of its sight. Keep GitHub branch protection on as well.
 
+**Known gaps.** Protect still does not see:
+
+- a script file, `source` or a project task that pushes or releases
+  (`bash deploy.sh`, `make release`, `melos run release`);
+- what a pipe into a shell or an interpreter carries when it is not a
+  literal `echo` / `printf` / here-doc (`curl … | sh`, `cat x.sh | bash`);
+- a command built at run time inside a program (`perl -e` with `qw()`,
+  strings joined in a variable);
+- `gh` aliases (`gh alias set`), and Grep / Glob tool calls on secret files.
+
 ## 🔮 The Crystal Gate
 
-`gh pr merge` works only through the gate, and the gate opens only when
+`gh pr merge <N>` is checked by the gate, and the gate opens only when
 **all** of these hold, read live from GitHub at the moment of the merge:
 
-- Laguna was invoked for this PR **tonight**, and it is your PR;
+- a token the Laguna skill writes for today's date exists for this PR, and it is your PR;
 - not a draft, no `needs-human` label;
 - **MERGEABLE with no conflict**, merge state `CLEAN`, up to date with the base;
 - **every check green** on the head commit;
@@ -290,8 +309,8 @@ We publish no numbers until they come from runs like yours. Details: [bench/READ
 **Does it work without Figma, Crashlytics or a database?** Yes. Heroes that
 need a source you have not connected say so and stop; everything else works.
 
-**Will it slow Claude down?** The spells are small shell scripts that run in
-milliseconds. The savings come from Cosmos doing small work itself instead
+**Will it slow Claude down?** The spells are small shell scripts; most finish in
+milliseconds, and the merge gate takes a few seconds to ask GitHub. The savings come from Cosmos doing small work itself instead
 of spawning agents.
 
 **Can I put a hero on another model?** Yes: `lumenparty models set <hero> <model>`, or a whole profile. See [Choosing models](#choosing-models).

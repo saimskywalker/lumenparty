@@ -30,7 +30,7 @@ case "$sub" in
       { echo; echo "# --- preset: $1 ---"; cat "$W/presets/$1.sh"; } >>"$dst"
     fi
     [[ -f "$root/.claude/wol/thresholds.md" ]] || cp "$W/thresholds.md" "$root/.claude/wol/"
-    login="$(gh api user --jq .login 2>/dev/null || true)"
+    login="$(perl -e 'alarm shift; exec @ARGV' 4 gh api user --jq .login 2>/dev/null || true)"
     [[ -n "$login" ]] && perl -pi -e "s/^WOL_OWNER=\"\"/WOL_OWNER=\"$login\"/" "$dst"
     echo "wrote $dst (owner: ${login:-<set WOL_OWNER>}). Commit it to share the settings with your team." ;;
   *) sed -n 2,12p "$0" ;;

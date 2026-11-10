@@ -22,14 +22,14 @@ fail=0
 no() { echo "✗ $*"; fail=1; (( report )) || exit 1; }
 ok() { (( report )) && echo "✓ $*"; return 0; }
 
-repo="$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>/dev/null)" || { echo "✗ not a GitHub repo"; exit 1; }
+repo="$(wol_gh repo view --json nameWithOwner --jq .nameWithOwner 2>/dev/null)" || { echo "✗ not a GitHub repo"; exit 1; }
 [[ -n "${WOL_OWNER:-}" ]] || no "WOL_OWNER is empty in .claude/wol/config.sh: the gate refuses every merge"
 
 tok="$STATE/active/$pr"
 [[ -f "$tok" && "$(cat "$tok")" == "$(date +%F)" ]] && ok "Laguna invoked for #$pr today" \
   || no "Laguna was not invoked for #$pr today; outside that run only a human merges"
 
-j="$(gh pr view "$pr" --repo "$repo" --json author,isDraft,mergeable,mergeStateStatus,labels,headRefOid,baseRefName,reviewRequests,files,statusCheckRollup 2>/dev/null)" \
+j="$(wol_gh pr view "$pr" --repo "$repo" --json author,isDraft,mergeable,mergeStateStatus,labels,headRefOid,baseRefName,reviewRequests,files,statusCheckRollup 2>/dev/null)" \
   || { echo "✗ cannot read PR #$pr"; exit 1; }
 q() { jq -r "$1" <<<"$j"; }
 head="$(q .headRefOid)"
@@ -53,11 +53,11 @@ bad="$(q '[.statusCheckRollup[] | select(
 (( total > 0 )) || no "no checks reported on the head"
 [[ -z "$bad" ]] && ok "all $total checks green" || no "checks not green: $bad"
 
-behind="$(gh api "repos/$repo/compare/$WOL_BASE...$head" --jq .behind_by 2>/dev/null || echo '?')"
+behind="$(wol_gh api "repos/$repo/compare/$WOL_BASE...$head" --jq .behind_by 2>/dev/null || echo '?')"
 [[ "$behind" == "0" ]] && ok "up to date with $WOL_BASE" || no "behind $WOL_BASE by $behind: rebase and let CI run again"
 
 owner="${repo%%/*}"; name="${repo##*/}"
-open="$(gh api graphql -f query="query{repository(owner:\"$owner\",name:\"$name\"){pullRequest(number:$pr){reviewThreads(first:100){nodes{isResolved}}}}}" \
+open="$(wol_gh api graphql -f query="query{repository(owner:\"$owner\",name:\"$name\"){pullRequest(number:$pr){reviewThreads(first:100){nodes{isResolved}}}}}" \
   --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved | not)] | length' 2>/dev/null || echo '?')"
 [[ "$open" == "0" ]] && ok "no unresolved review thread" || no "unresolved review threads: $open"
 
