@@ -84,6 +84,27 @@ ok "slow refuses a denied command before running it" "[[ $rc == 126 && ! -e '$P/
 ok "slow runs an allowed command" "[[ -e '$P/slow-ok' ]]"
 rm -rf "$P"
 
+# Models: profiles and per-hero overrides rewrite the installed heroes,
+# survive a re-install, and match what the generator ships.
+M() { (cd "$T" && CLAUDE_PROJECT_DIR="$T" "$T/.claude/wol/bin/lumenparty" models "$@"); }
+mod() { sed -n 's/^model: //p' "$T/.claude/agents/$1.md" | head -1; }
+ok "shipped models match the heroes" "[[ \$(for f in '$SRC'/agents/*.md; do echo \"\$(basename \"\$f\" .md)=\$(sed -n 's/^model: //p' \"\$f\" | head -1)\"; done | sort) == \$(grep -v '^#' '$SRC/wol/models.default' | sort) ]]"
+ok "balanced is the default" "[[ \$(mod squall) == opus && \$(mod lightning) == haiku && \$(mod cloud) == sonnet ]]"
+M profile economy >/dev/null
+ok "economy moves opus to sonnet" "[[ \$(mod squall) == sonnet && \$(mod cloud) == sonnet && \$(mod vaan) == haiku ]]"
+M profile quality >/dev/null
+ok "quality moves sonnet to opus, haiku to sonnet" "[[ \$(mod cloud) == opus && \$(mod lightning) == sonnet ]]"
+M set cloud claude-sonnet-5-5 >/dev/null
+ok "a per-hero override wins over the profile" "[[ \$(mod cloud) == claude-sonnet-5-5 && \$(mod zidane) == opus ]]"
+ok "only the front matter changes" "[[ \$(grep -c '^model: ' '$T/.claude/agents/cloud.md') == 1 ]] && grep -q '^name: cloud' '$T/.claude/agents/cloud.md'"
+"$SRC/install.sh" "$T" >/dev/null
+ok "a re-install keeps the choices" "[[ \$(mod cloud) == claude-sonnet-5-5 && \$(mod squall) == opus ]]"
+ok "an unknown model is refused" "! M set cloud gpt-4 2>/dev/null && [[ \$(mod cloud) == claude-sonnet-5-5 ]]"
+ok "an unknown hero is refused" "! M set nobody opus 2>/dev/null"
+ok "an unknown profile is refused" "! M profile turbo 2>/dev/null"
+M set cloud default >/dev/null; M profile balanced >/dev/null
+ok "default drops the override" "[[ \$(mod cloud) == sonnet && \$(mod squall) == opus ]] && grep -q '^WOL_MODELS=\"\"' '$T/.claude/wol/config.sh'"
+ok "the list shows every hero" "[[ \$(M | grep -cE '^(bartz|squall|zidane) ') == 3 ]]"
 # Fail closed: every PreToolUse hook blocks when it fails; without jq the
 # spells still print a valid deny; a hung gh cannot hold the gate open.
 for f in hooks/hooks.json wol/install-hooks.json; do

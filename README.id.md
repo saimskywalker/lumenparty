@@ -102,6 +102,7 @@ Jalan di macOS dan Linux.
 | `lumenparty gate <pr> --report` | menampilkan semua syarat Crystal Gate untuk satu PR |
 | `lumenparty libra` | siapa yang pegang antrian, proses berat, RAM bebas, riwayat terakhir |
 | `lumenparty awake start` / `lumenparty rest` | dipakai Laguna: jaga laptop tetap menyala, lalu beres-beres di akhir |
+| `lumenparty models` | model yang dipakai tiap hero; `profile` / `set` untuk mengubahnya |
 
 Kalau pakai plugin, `lumenparty` langsung ada di PATH. Kalau lewat `install.sh`,
 perintahnya ada di `.claude/wol/bin/lumenparty`. Perintah lama `wol` masih bisa
@@ -137,6 +138,36 @@ FINDINGS:
 - [HIGH] lib/purchase/verify.dart:42 — receipt dipercaya dari client, tidak pernah dicek ke store
 SUMMARY: satu temuan HIGH: validasi receipt di server belum ada
 ```
+
+### Memilih model
+
+Tabel di atas adalah default **balanced**: Opus untuk hero yang temuannya
+mahal kalau terlewat (Squall, Noctis, Firion, Cecil), Haiku untuk membaca hal
+mekanis (Lightning, Vaan), Sonnet untuk yang membangun atau menjelaskan. Bisa
+diubah per project dengan satu perintah; pilihannya disimpan di
+`.claude/wol/config.sh`.
+
+```bash
+lumenparty models                       # tiap hero: bawaan, override, model yang dipakai
+lumenparty models profile quality       # hero Sonnet pakai Opus, hero Haiku pakai Sonnet
+lumenparty models profile economy       # hero Opus pakai Sonnet (lebih hemat dan cepat)
+lumenparty models profile inherit       # semua hero ikut model sesi utama
+lumenparty models set squall sonnet     # satu hero, di atas profil
+lumenparty models set cloud opus
+lumenparty models set cloud default     # kembali ke profil
+```
+
+Model bisa `opus`, `sonnet`, `haiku`, `fable`, `inherit`, atau id lengkap
+seperti `claude-opus-5-5`. Alias mengikuti model terbaru tiap keluarga di
+Anthropic API; di Bedrock, Vertex, atau Foundry bisa menunjuk model lama, jadi
+pakai id lengkap di sana.
+
+Model per hero butuh cara pasang `install.sh`, yang menulis hero ke
+`.claude/agents/` (menjalankannya ulang tidak menghapus pilihan Anda). Kalau
+pakai plugin, hero dibaca dari folder plugin: semua sub-agent bisa dijalankan
+di satu model dengan `"env": {"CLAUDE_CODE_SUBAGENT_MODEL": "sonnet",
+"CLAUDE_CODE_SUBAGENT_MODEL_FORCE": "1"}` di `.claude/settings.local.json`
+(Claude Code 2.1.257 atau lebih baru).
 
 ## ✨ Skill
 
@@ -282,6 +313,8 @@ sumber data yang belum kamu sambungkan akan bilang begitu lalu berhenti. Sisanya
 **Apakah bikin Claude jadi lambat?** Spell-nya cuma script shell kecil; kebanyakan
 selesai dalam hitungan milidetik, dan merge gate butuh beberapa detik untuk bertanya ke GitHub. Penghematannya justru datang dari Cosmos
 yang mengerjakan tugas kecil sendiri tanpa memanggil agent.
+
+**Bisakah hero dipindah ke model lain?** Bisa: `lumenparty models set <hero> <model>`, atau satu profil sekaligus. Lihat [Memilih model](#memilih-model).
 
 **Batasnya bisa diubah?** Semua ada di `.claude/wol/config.sh`: branch yang
 dilindungi, perintah berat, perintah deploy, file rahasia, batas ukuran, dan aturan path untuk gerbang.

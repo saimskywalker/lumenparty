@@ -11,6 +11,14 @@ WOL_PROTECTED='main|master|develop|release/[^[:space:]:]*|production'
 # Reviewers whose requested review means "a human merges this one".
 WOL_HUMAN_ONLY_REVIEWERS=""        # e.g. "lead-dev|security-team"
 
+# Models: which Claude model each hero runs on. Set with `lumenparty models`.
+#   balanced = as shipped (Opus judges, Sonnet builds, Haiku gathers)
+#   quality  = Sonnet heroes on Opus, Haiku heroes on Sonnet
+#   economy  = Opus heroes on Sonnet
+#   inherit  = every hero uses your main session's model
+WOL_MODEL_PROFILE="balanced"
+WOL_MODELS=""                      # per-hero overrides, e.g. "squall=sonnet cloud=opus"
+
 # Reply language for the crew ("en", "id", "ja", ...). Code stays English.
 WOL_LANG="en"
 
