@@ -10,6 +10,8 @@
 
 - [ ] `shellcheck -S warning` is clean on the files CI checks
 - [ ] `tests/run.sh` passes
+- [ ] Closes an issue labelled `accepted`; at most 400 changed lines; no new `# shellcheck disable` (checked)
+- [ ] Changes to spells, hooks, `bin/` or the install scripts come with a test under `tests/` (checked)
 - [ ] If this changes a spell: a line in `tests/cases.txt` fails without the
       change and passes with it
 - [ ] If this changes a hero or skill: `python3 tools/gen_agents.py` and
