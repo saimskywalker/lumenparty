@@ -26,7 +26,30 @@ Thanks for joining the party.
 ## Pull requests
 
 One topic per PR, a clear description of the behaviour change, and the
-`tests/run.sh` output.
+`tests/run.sh` output. Every CI check must pass before a pull request can be
+merged. The `PR rules` check enforces these:
+
+- **Issue first.** Open an issue and wait until a maintainer labels it
+  `accepted`, then write `Closes #N` in the pull request.
+- **Tests.** Every change to `bin/`, `hooks/`, the `.sh` and `.json` files in
+  `wol/`, `install.sh`, `uninstall.sh` or a `bench/tasks/*/check.sh` needs a
+  test change under `tests/`. A bug fix needs a test that fails without the
+  fix. Changes to heroes and skills (`tools/gen_*.py` and the generated
+  files) and to the benchmark runner and fixture do not.
+- **Small.** At most 400 changed lines, one issue per pull request.
+- **No suppressions.** No new `# shellcheck disable` lines in the shell files,
+  no `.shellcheckrc`. Fix the finding.
+- **At most 2 open pull requests** per person.
+
+If a rule really does not fit your change, say why in the description. A
+maintainer can waive it with a label (`no-tests-needed`, `large-change` or
+`suppression-ok`).
+
+## Legal notice
+
+By submitting a contribution you confirm that you wrote it, that you have the
+right to submit it, and that it may be distributed under the project license
+(see [LICENSE](LICENSE)).
 
 ## AI-assisted contributions
 
@@ -39,7 +62,11 @@ Using AI tools is fine; please just be open about it.
   It shows us what you understood about the change. Please don't paste
   generated text.
 - Read, run and test every line you submit, and be ready to explain it in
-  review.
+  review. If you don't understand what a line does, don't submit it.
+- Keep the change focused. Agents like to add unrelated "improvements",
+  long comments and dead code; remove them before you open the pull request.
+- Pull requests that are raw, unreviewed agent output will be closed.
+- If you use an agent, point it at [AGENTS.md](AGENTS.md).
 - If the disclosure is missing, a check adds a reminder to the PR. It does
   not fail the PR, but a maintainer will ask about it before merging.
 
