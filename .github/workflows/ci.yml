@@ -9,8 +9,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dart-lang/setup-dart@v1
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@2286a0c042b44434fe26d292bbce8d34f7ec662b # v1.8.2
       - name: Shellcheck
         run: shellcheck -S warning install.sh uninstall.sh tests/run.sh bin/lumenparty bin/wol wol/lib.sh wol/models.sh wol/spells/*.sh wol/crystal/*.sh bench/run.sh bench/tasks/*/check.sh
       - name: Generated files are up to date
